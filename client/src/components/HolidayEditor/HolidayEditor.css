@@ -1,0 +1,276 @@
+/* Holiday Editor Styles */
+.holiday-editor-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.holiday-editor {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.holiday-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+.holiday-editor-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: #e9ecef;
+}
+
+.holiday-editor-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.add-holiday-section {
+  margin-bottom: 30px;
+}
+
+.add-holiday-section h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.add-holiday-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-input,
+.name-input {
+  padding: 8px 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.date-input {
+  min-width: 150px;
+}
+
+.name-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.date-input:focus,
+.name-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.add-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.add-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.holidays-list-section h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.holidays-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+}
+
+.no-holidays {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.holiday-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+}
+
+.holiday-item:last-child {
+  border-bottom: none;
+}
+
+.holiday-item:hover {
+  background-color: #f8f9fa;
+}
+
+.holiday-info {
+  flex: 1;
+}
+
+.holiday-date {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.holiday-name {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.remove-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.remove-button:hover {
+  background: #c82333;
+}
+
+.holiday-editor-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-footer-button {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.close-footer-button:hover {
+  background: #545b62;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .holiday-editor {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .holiday-editor-header,
+  .holiday-editor-content,
+  .holiday-editor-footer {
+    padding: 15px;
+  }
+  
+  .add-holiday-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .date-input,
+  .name-input {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .add-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .holiday-editor {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .holiday-editor-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .holiday-item {
+    padding: 10px 12px;
+  }
+  
+  .holiday-date {
+    font-size: 0.9rem;
+  }
+  
+  .holiday-name {
+    font-size: 0.8rem;
+  }
+}

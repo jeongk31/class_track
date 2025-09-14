@@ -167,7 +167,7 @@ function App() {
         <div className="header-content">
           <h1>
             <img 
-              src="/icon.jpg" 
+              src="/icon.png" 
               alt="Hello Kitty" 
               className="hello-kitty-icon"
             />

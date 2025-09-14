@@ -165,14 +165,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-content">
-          <h1>
-            <img 
-              src="/icon.png" 
-              alt="Hello Kitty" 
-              className="hello-kitty-icon"
-            />
-            수업 일정
-          </h1>
+          <h1>수업 일정</h1>
           <div className="header-actions">
             <button 
               className="action-button"

@@ -165,7 +165,10 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-content">
-          <h1>수업 일정 관리</h1>
+          <h1>
+            <span className="hello-kitty-icon">🐱</span>
+            수업 일정
+          </h1>
           <div className="header-actions">
             <button 
               className="action-button"

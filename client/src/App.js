@@ -166,7 +166,11 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <h1>
-            <span className="hello-kitty-icon">🐱</span>
+            <img 
+              src="/icon.jpg" 
+              alt="Hello Kitty" 
+              className="hello-kitty-icon"
+            />
             수업 일정
           </h1>
           <div className="header-actions">

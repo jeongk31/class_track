@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, getClassComment, setClassComment, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
 const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
+  // Local state for managing comment inputs to prevent text deletion issues
+  const [localComments, setLocalComments] = useState({});
+  
+  // Sync local comments with global comments when they change
+  useEffect(() => {
+    setLocalComments({});
+  }, [comments]);
+  
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentDate);
   startOfWeek.setHours(0, 0, 0, 0); // Normalize to midnight
@@ -50,10 +58,19 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     onClassStatusUpdate(newClassStatus);
   };
 
-  const handleCommentChange = (date, classId, comment) => {
+  const handleCommentChange = useCallback((date, classId, comment) => {
+    const key = `${date.toISOString().split('T')[0]}-${classId}`;
+    
+    // Update local state immediately for responsive UI
+    setLocalComments(prev => ({
+      ...prev,
+      [key]: comment
+    }));
+    
+    // Update global state immediately as well
     const newComments = setClassComment(comments, date, classId, comment);
     onCommentsUpdate(newComments);
-  };
+  }, [comments, onCommentsUpdate]);
   
   const formatWeekRange = () => {
     const endOfWeek = new Date(startOfWeek);
@@ -96,7 +113,10 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                 const classId = dayData.schedule[period];
                 const hasClass = classId !== null && classId !== undefined && dayData.isWithinSemester && !dayData.isHoliday;
                 const isCompleted = hasClass ? isClassCompleted(classStatus, dayData.date, classId) : false;
-                const comment = hasClass ? getClassComment(comments, dayData.date, classId) : '';
+                
+                // Use local state for comment if available, otherwise fall back to global state
+                const commentKey = hasClass ? `${dayData.date.toISOString().split('T')[0]}-${classId}` : '';
+                const comment = hasClass ? (localComments[commentKey] !== undefined ? localComments[commentKey] : getClassComment(comments, dayData.date, classId)) : '';
                 
                 return (
                   <div 

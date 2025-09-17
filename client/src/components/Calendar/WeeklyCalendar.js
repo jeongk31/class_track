@@ -16,7 +16,8 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      Object.values(timeoutRefs.current).forEach(timeout => {
+      const currentTimeouts = timeoutRefs.current;
+      Object.values(currentTimeouts).forEach(timeout => {
         if (timeout) clearTimeout(timeout);
       });
     };

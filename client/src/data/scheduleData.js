@@ -161,21 +161,21 @@ export const parseDate = (dateString) => {
 };
 
 // Generate unique key for class status and comments
-export const generateClassKey = (date, classId) => {
+export const generateClassKey = (date, classId, period = null) => {
   const dateStr = formatDate(date);
-  return `${dateStr}-${classId}`;
+  return period !== null ? `${dateStr}-${classId}-${period}` : `${dateStr}-${classId}`;
 };
 
 // Check if a class is completed for a specific date
-export const isClassCompleted = (classStatus, date, classId) => {
-  const key = generateClassKey(date, classId);
+export const isClassCompleted = (classStatus, date, classId, period = null) => {
+  const key = generateClassKey(date, classId, period);
   const result = classStatus[key] || false;
   return result;
 };
 
 // Toggle class completion status
-export const toggleClassCompletion = (classStatus, date, classId) => {
-  const key = generateClassKey(date, classId);
+export const toggleClassCompletion = (classStatus, date, classId, period = null) => {
+  const key = generateClassKey(date, classId, period);
   return {
     ...classStatus,
     [key]: !classStatus[key]
@@ -183,14 +183,14 @@ export const toggleClassCompletion = (classStatus, date, classId) => {
 };
 
 // Get comment for a specific class on a specific date
-export const getClassComment = (comments, date, classId) => {
-  const key = generateClassKey(date, classId);
+export const getClassComment = (comments, date, classId, period = null) => {
+  const key = generateClassKey(date, classId, period);
   return comments[key] || '';
 };
 
 // Set comment for a specific class on a specific date
-export const setClassComment = (comments, date, classId, comment) => {
-  const key = generateClassKey(date, classId);
+export const setClassComment = (comments, date, classId, comment, period = null) => {
+  const key = generateClassKey(date, classId, period);
   return {
     ...comments,
     [key]: comment

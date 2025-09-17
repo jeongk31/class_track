@@ -61,13 +61,13 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endD
 
   const handleClassCheck = (e, date, classId) => {
     e.stopPropagation();
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId);
+    const newClassStatus = toggleClassCompletion(classStatus, date, classId, null);
     onClassStatusUpdate(newClassStatus);
   };
 
   const handleClassClick = (e, date, classId) => {
     e.stopPropagation();
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId);
+    const newClassStatus = toggleClassCompletion(classStatus, date, classId, null);
     onClassStatusUpdate(newClassStatus);
   };
   
@@ -114,7 +114,7 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endD
                     <div className="day-classes">
                       {dayData.classes.map(classId => {
                         const classData = classes.find(c => c.id === classId);
-                        const isCompleted = isClassCompleted(classStatus, dayData.date, classId);
+                        const isCompleted = isClassCompleted(classStatus, dayData.date, classId, null);
                         return (
                           <div
                             key={classId}

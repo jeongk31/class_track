@@ -48,18 +48,18 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     return classData ? classData.color : '#cccccc';
   };
 
-  const handleClassCheck = (date, classId) => {
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId);
+  const handleClassCheck = (date, classId, period) => {
+    const newClassStatus = toggleClassCompletion(classStatus, date, classId, period);
     onClassStatusUpdate(newClassStatus);
   };
 
-  const handleClassClick = (date, classId) => {
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId);
+  const handleClassClick = (date, classId, period) => {
+    const newClassStatus = toggleClassCompletion(classStatus, date, classId, period);
     onClassStatusUpdate(newClassStatus);
   };
 
-  const handleCommentChange = useCallback((date, classId, comment) => {
-    const key = `${date.toISOString().split('T')[0]}-${classId}`;
+  const handleCommentChange = useCallback((date, classId, comment, period) => {
+    const key = `${date.toISOString().split('T')[0]}-${classId}-${period}`;
     
     // Update local state immediately for responsive UI
     setLocalComments(prev => ({
@@ -68,7 +68,7 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     }));
     
     // Update global state immediately as well
-    const newComments = setClassComment(comments, date, classId, comment);
+    const newComments = setClassComment(comments, date, classId, comment, period);
     onCommentsUpdate(newComments);
   }, [comments, onCommentsUpdate]);
   
@@ -112,11 +112,11 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
               {weekDays.map((dayData, dayIndex) => {
                 const classId = dayData.schedule[period];
                 const hasClass = classId !== null && classId !== undefined && dayData.isWithinSemester && !dayData.isHoliday;
-                const isCompleted = hasClass ? isClassCompleted(classStatus, dayData.date, classId) : false;
+                const isCompleted = hasClass ? isClassCompleted(classStatus, dayData.date, classId, period) : false;
                 
                 // Use local state for comment if available, otherwise fall back to global state
-                const commentKey = hasClass ? `${dayData.date.toISOString().split('T')[0]}-${classId}` : '';
-                const comment = hasClass ? (localComments[commentKey] !== undefined ? localComments[commentKey] : getClassComment(comments, dayData.date, classId)) : '';
+                const commentKey = hasClass ? `${dayData.date.toISOString().split('T')[0]}-${classId}-${period}` : '';
+                const comment = hasClass ? (localComments[commentKey] !== undefined ? localComments[commentKey] : getClassComment(comments, dayData.date, classId, period)) : '';
                 
                 return (
                   <div 
@@ -128,13 +128,13 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                         <div 
                           className={`weekly-class-bar ${isCompleted ? 'completed' : ''}`}
                           style={{ backgroundColor: getClassColor(classId) }}
-                          onClick={() => handleClassClick(dayData.date, classId)}
+                          onClick={() => handleClassClick(dayData.date, classId, period)}
                         >
                           <button
                             className="class-check-button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleClassCheck(dayData.date, classId);
+                              handleClassCheck(dayData.date, classId, period);
                             }}
                             title={isCompleted ? '완료 취소' : '완료 표시'}
                           >
@@ -147,7 +147,7 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                         <div className="weekly-class-comment">
                           <textarea
                             value={comment}
-                            onChange={(e) => handleCommentChange(dayData.date, classId, e.target.value)}
+                            onChange={(e) => handleCommentChange(dayData.date, classId, e.target.value, period)}
                             onKeyDown={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}
                             onFocus={(e) => e.stopPropagation()}

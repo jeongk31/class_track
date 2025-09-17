@@ -107,3 +107,4 @@ const Statistics = ({ weeklySchedule, startDate, endDate, classStatus, holidays,
 };
 
 export default Statistics;
+

@@ -148,6 +148,9 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                           <textarea
                             value={comment}
                             onChange={(e) => handleCommentChange(dayData.date, classId, e.target.value)}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                            onFocus={(e) => e.stopPropagation()}
                             placeholder="NOTES..."
                             className="comment-textarea"
                           />

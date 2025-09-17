@@ -148,3 +148,4 @@ const HolidayEditor = ({ holidays, onHolidaysUpdate, onClose }) => {
 };
 
 export default HolidayEditor;
+

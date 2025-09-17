@@ -1,11 +1,8 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, getClassComment, setClassComment, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
 const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
-  // Refs for uncontrolled textareas
-  const textareaRefs = useRef({});
-  
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentDate);
   startOfWeek.setHours(0, 0, 0, 0); // Normalize to midnight
@@ -53,30 +50,11 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     onClassStatusUpdate(newClassStatus);
   };
 
-  // Debounced save function
+  // Simple save function
   const saveComment = useCallback((date, classId, period, value) => {
     const newComments = setClassComment(comments, date, classId, value, period);
     onCommentsUpdate(newComments);
   }, [comments, onCommentsUpdate]);
-
-  // Handle textarea input with debouncing
-  const handleTextareaInput = useCallback((date, classId, period) => {
-    const key = `${date.toISOString().split('T')[0]}-${classId}-${period}`;
-    const textarea = textareaRefs.current[key];
-    if (!textarea) return;
-
-    const value = textarea.value;
-    
-    // Clear existing timeout
-    if (textarea._timeout) {
-      clearTimeout(textarea._timeout);
-    }
-    
-    // Set new timeout for debounced save
-    textarea._timeout = setTimeout(() => {
-      saveComment(date, classId, period, value);
-    }, 500);
-  }, [saveComment]);
   
   const formatWeekRange = () => {
     const endOfWeek = new Date(startOfWeek);
@@ -156,27 +134,14 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                         </div>
                         <div className="weekly-class-comment">
                           <textarea
-                            ref={(el) => {
-                              if (el) {
-                                textareaRefs.current[commentKey] = el;
-                                // Set the value only if it's different to avoid cursor jumping
-                                if (el.value !== comment) {
-                                  el.value = comment;
-                                }
-                              }
+                            defaultValue={comment}
+                            onBlur={(e) => {
+                              e.stopPropagation();
+                              saveComment(dayData.date, classId, period, e.target.value);
                             }}
-                            onInput={() => handleTextareaInput(dayData.date, classId, period)}
                             onKeyDown={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}
                             onFocus={(e) => e.stopPropagation()}
-                            onBlur={(e) => {
-                              e.stopPropagation();
-                              // Save immediately on blur
-                              if (textareaRefs.current[commentKey]) {
-                                const value = textareaRefs.current[commentKey].value;
-                                saveComment(dayData.date, classId, period, value);
-                              }
-                            }}
                             placeholder="NOTES..."
                             className="comment-textarea"
                           />

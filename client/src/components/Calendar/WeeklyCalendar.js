@@ -1,15 +1,26 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, getClassComment, setClassComment, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
 const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
   // Local state for managing comment inputs to prevent text deletion issues
   const [localComments, setLocalComments] = useState({});
+  const [isComposing, setIsComposing] = useState({});
+  const timeoutRefs = useRef({});
   
   // Sync local comments with global comments when they change
   useEffect(() => {
     setLocalComments({});
   }, [comments]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(timeoutRefs.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+    };
+  }, []);
   
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentDate);
@@ -67,8 +78,45 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
       [key]: comment
     }));
     
-    // Update global state immediately as well
-    const newComments = setClassComment(comments, date, classId, comment, period);
+    // Only update global state if not composing (for Korean input)
+    if (!isComposing[key]) {
+      // Clear existing timeout
+      if (timeoutRefs.current[key]) {
+        clearTimeout(timeoutRefs.current[key]);
+      }
+      
+      // Set new timeout for debounced update
+      timeoutRefs.current[key] = setTimeout(() => {
+        const newComments = setClassComment(comments, date, classId, comment, period);
+        onCommentsUpdate(newComments);
+        delete timeoutRefs.current[key];
+      }, 300);
+    }
+  }, [comments, onCommentsUpdate, isComposing]);
+
+  const handleCompositionStart = useCallback((date, classId, period) => {
+    const key = `${date.toISOString().split('T')[0]}-${classId}-${period}`;
+    setIsComposing(prev => ({
+      ...prev,
+      [key]: true
+    }));
+  }, []);
+
+  const handleCompositionEnd = useCallback((date, classId, period, value) => {
+    const key = `${date.toISOString().split('T')[0]}-${classId}-${period}`;
+    setIsComposing(prev => ({
+      ...prev,
+      [key]: false
+    }));
+    
+    // Clear any pending timeout
+    if (timeoutRefs.current[key]) {
+      clearTimeout(timeoutRefs.current[key]);
+      delete timeoutRefs.current[key];
+    }
+    
+    // Update global state after composition ends
+    const newComments = setClassComment(comments, date, classId, value, period);
     onCommentsUpdate(newComments);
   }, [comments, onCommentsUpdate]);
   
@@ -128,7 +176,11 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                         <div 
                           className={`weekly-class-bar ${isCompleted ? 'completed' : ''}`}
                           style={{ backgroundColor: getClassColor(classId) }}
-                          onClick={() => handleClassClick(dayData.date, classId, period)}
+                          onClick={(e) => {
+                            // Don't trigger if clicking on textarea or its container
+                            if (e.target.closest('.weekly-class-comment')) return;
+                            handleClassClick(dayData.date, classId, period);
+                          }}
                         >
                           <button
                             className="class-check-button"
@@ -148,9 +200,12 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                           <textarea
                             value={comment}
                             onChange={(e) => handleCommentChange(dayData.date, classId, e.target.value, period)}
+                            onCompositionStart={() => handleCompositionStart(dayData.date, classId, period)}
+                            onCompositionEnd={(e) => handleCompositionEnd(dayData.date, classId, period, e.target.value)}
                             onKeyDown={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}
                             onFocus={(e) => e.stopPropagation()}
+                            onBlur={(e) => e.stopPropagation()}
                             placeholder="NOTES..."
                             className="comment-textarea"
                           />

@@ -1,15 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, getClassComment, setClassComment, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
 const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
-  // Local state for managing comment inputs to prevent text deletion issues
-  const [localComments, setLocalComments] = useState({});
-  
-  // Sync local comments with global comments when they change
-  useEffect(() => {
-    setLocalComments({});
-  }, [comments]);
+  // Refs for uncontrolled textareas
+  const textareaRefs = useRef({});
   
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentDate);
@@ -58,19 +53,30 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     onClassStatusUpdate(newClassStatus);
   };
 
-  const handleCommentChange = useCallback((date, classId, comment, period) => {
-    const key = `${date.toISOString().split('T')[0]}-${classId}-${period}`;
-    
-    // Update local state immediately for responsive UI
-    setLocalComments(prev => ({
-      ...prev,
-      [key]: comment
-    }));
-    
-    // Update global state immediately - no debouncing
-    const newComments = setClassComment(comments, date, classId, comment, period);
+  // Debounced save function
+  const saveComment = useCallback((date, classId, period, value) => {
+    const newComments = setClassComment(comments, date, classId, value, period);
     onCommentsUpdate(newComments);
   }, [comments, onCommentsUpdate]);
+
+  // Handle textarea input with debouncing
+  const handleTextareaInput = useCallback((date, classId, period) => {
+    const key = `${date.toISOString().split('T')[0]}-${classId}-${period}`;
+    const textarea = textareaRefs.current[key];
+    if (!textarea) return;
+
+    const value = textarea.value;
+    
+    // Clear existing timeout
+    if (textarea._timeout) {
+      clearTimeout(textarea._timeout);
+    }
+    
+    // Set new timeout for debounced save
+    textarea._timeout = setTimeout(() => {
+      saveComment(date, classId, period, value);
+    }, 500);
+  }, [saveComment]);
   
   const formatWeekRange = () => {
     const endOfWeek = new Date(startOfWeek);
@@ -114,9 +120,9 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                 const hasClass = classId !== null && classId !== undefined && dayData.isWithinSemester && !dayData.isHoliday;
                 const isCompleted = hasClass ? isClassCompleted(classStatus, dayData.date, classId, period) : false;
                 
-                // Use local state for comment if available, otherwise fall back to global state
+                // Get comment from global state
+                const comment = hasClass ? getClassComment(comments, dayData.date, classId, period) : '';
                 const commentKey = hasClass ? `${dayData.date.toISOString().split('T')[0]}-${classId}-${period}` : '';
-                const comment = hasClass ? (localComments[commentKey] !== undefined ? localComments[commentKey] : getClassComment(comments, dayData.date, classId, period)) : '';
                 
                 return (
                   <div 
@@ -150,12 +156,27 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                         </div>
                         <div className="weekly-class-comment">
                           <textarea
-                            value={comment}
-                            onChange={(e) => handleCommentChange(dayData.date, classId, e.target.value, period)}
+                            ref={(el) => {
+                              if (el) {
+                                textareaRefs.current[commentKey] = el;
+                                // Set the value only if it's different to avoid cursor jumping
+                                if (el.value !== comment) {
+                                  el.value = comment;
+                                }
+                              }
+                            }}
+                            onInput={() => handleTextareaInput(dayData.date, classId, period)}
                             onKeyDown={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}
                             onFocus={(e) => e.stopPropagation()}
-                            onBlur={(e) => e.stopPropagation()}
+                            onBlur={(e) => {
+                              e.stopPropagation();
+                              // Save immediately on blur
+                              if (textareaRefs.current[commentKey]) {
+                                const value = textareaRefs.current[commentKey].value;
+                                saveComment(dayData.date, classId, period, value);
+                              }
+                            }}
                             placeholder="NOTES..."
                             className="comment-textarea"
                           />

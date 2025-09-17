@@ -100,7 +100,6 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                 
                 // Get comment from global state
                 const comment = hasClass ? getClassComment(comments, dayData.date, classId, period) : '';
-                const commentKey = hasClass ? `${dayData.date.toISOString().split('T')[0]}-${classId}-${period}` : '';
                 
                 return (
                   <div 

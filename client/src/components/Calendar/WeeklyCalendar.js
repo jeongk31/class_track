@@ -133,6 +133,7 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                         </div>
                         <div className="weekly-class-comment">
                           <textarea
+                            key={`${dayData.date.toISOString().split('T')[0]}-${classId}-${period}`}
                             defaultValue={comment}
                             onBlur={(e) => {
                               e.stopPropagation();

@@ -57,15 +57,6 @@ function App() {
     }
   };
 
-  const handleDateUpdate = async (startDate, endDate) => {
-    try {
-      const updatedData = await api.updateDates(startDate, endDate);
-      setScheduleData(updatedData);
-    } catch (err) {
-      console.error('Failed to update dates:', err);
-      setError('날짜 업데이트에 실패했습니다.');
-    }
-  };
 
   const handleClassStatusUpdate = async (classStatus) => {
     try {

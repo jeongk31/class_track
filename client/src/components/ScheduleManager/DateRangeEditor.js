@@ -1,35 +1,63 @@
 import React, { useState } from 'react';
 import './DateRangeEditor.css';
 
-const DateRangeEditor = ({ startDate, endDate, onDateUpdate, onClose }) => {
-  const [localStartDate, setLocalStartDate] = useState(startDate);
-  const [localEndDate, setLocalEndDate] = useState(endDate);
-  
+const DateRangeEditor = ({ onDateRangeSelect, onClose, startDate, endDate }) => {
+  const [localStartDate, setLocalStartDate] = useState(startDate || '');
+  const [localEndDate, setLocalEndDate] = useState(endDate || '');
+  const [error, setError] = useState('');
+
   const handleSave = () => {
-    if (new Date(localStartDate) > new Date(localEndDate)) {
-      alert('시작 날짜는 종료 날짜보다 이전이어야 합니다.');
+    // Validate dates
+    if (!localStartDate || !localEndDate) {
+      setError('시작일과 종료일을 모두 선택해주세요.');
       return;
     }
-    
-    onDateUpdate(localStartDate, localEndDate);
+
+    const start = new Date(localStartDate);
+    const end = new Date(localEndDate);
+
+    if (start > end) {
+      setError('시작일이 종료일보다 늦을 수 없습니다.');
+      return;
+    }
+
+    // Calculate number of days
+    const timeDiff = end.getTime() - start.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+    if (daysDiff > 365) {
+      setError('일정 변경은 최대 1년(365일)까지만 가능합니다.');
+      return;
+    }
+
+    setError('');
+    onDateRangeSelect(localStartDate, localEndDate);
     onClose();
   };
-  
+
   const handleCancel = () => {
-    setLocalStartDate(startDate);
-    setLocalEndDate(endDate);
+    setLocalStartDate(startDate || '');
+    setLocalEndDate(endDate || '');
+    setError('');
     onClose();
   };
-  
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('ko-KR');
+
+  const formatDateRange = () => {
+    if (!localStartDate || !localEndDate) return '';
+    
+    const start = new Date(localStartDate);
+    const end = new Date(localEndDate);
+    const timeDiff = end.getTime() - start.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+    
+    return `${daysDiff}일간 (${start.toLocaleDateString('ko-KR')} ~ ${end.toLocaleDateString('ko-KR')})`;
   };
-  
+
   return (
     <div className="date-range-editor-overlay">
       <div className="date-range-editor">
         <div className="editor-header">
-          <h2>학기 날짜 설정</h2>
+          <h2>일정 변경 날짜 범위 선택</h2>
           <button className="close-button" onClick={handleCancel}>
             ×
           </button>
@@ -38,7 +66,7 @@ const DateRangeEditor = ({ startDate, endDate, onDateUpdate, onClose }) => {
         <div className="editor-content">
           <div className="date-inputs">
             <div className="date-input-group">
-              <label htmlFor="start-date">시작 날짜</label>
+              <label htmlFor="start-date">시작일</label>
               <input
                 id="start-date"
                 type="date"
@@ -46,13 +74,10 @@ const DateRangeEditor = ({ startDate, endDate, onDateUpdate, onClose }) => {
                 onChange={(e) => setLocalStartDate(e.target.value)}
                 className="date-input"
               />
-              <div className="date-display">
-                {formatDate(localStartDate)}
-              </div>
             </div>
             
             <div className="date-input-group">
-              <label htmlFor="end-date">종료 날짜</label>
+              <label htmlFor="end-date">종료일</label>
               <input
                 id="end-date"
                 type="date"
@@ -60,40 +85,30 @@ const DateRangeEditor = ({ startDate, endDate, onDateUpdate, onClose }) => {
                 onChange={(e) => setLocalEndDate(e.target.value)}
                 className="date-input"
               />
-              <div className="date-display">
-                {formatDate(localEndDate)}
-              </div>
             </div>
           </div>
           
-          <div className="date-info">
-            <h4>현재 설정</h4>
-            <div className="current-dates">
-              <div className="current-date-item">
-                <strong>시작:</strong> {formatDate(startDate)}
-              </div>
-              <div className="current-date-item">
-                <strong>종료:</strong> {formatDate(endDate)}
-              </div>
-              <div className="current-date-item">
-                <strong>기간:</strong> {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))}일
-              </div>
+          {localStartDate && localEndDate && (
+            <div className="date-range-preview">
+              <h3>선택된 기간</h3>
+              <p>{formatDateRange()}</p>
             </div>
-          </div>
+          )}
           
-          <div className="preview-info">
-            <h4>새로운 설정</h4>
-            <div className="preview-dates">
-              <div className="preview-date-item">
-                <strong>시작:</strong> {formatDate(localStartDate)}
-              </div>
-              <div className="preview-date-item">
-                <strong>종료:</strong> {formatDate(localEndDate)}
-              </div>
-              <div className="preview-date-item">
-                <strong>기간:</strong> {Math.ceil((new Date(localEndDate) - new Date(localStartDate)) / (1000 * 60 * 60 * 24))}일
-              </div>
+          {error && (
+            <div className="error-message">
+              {error}
             </div>
+          )}
+          
+          <div className="instructions">
+            <h3>안내사항</h3>
+            <ul>
+              <li>선택한 날짜 범위에 대해 일정을 변경할 수 있습니다.</li>
+              <li>기존 주간 일정 템플릿을 기반으로 새로운 일정을 만들 수 있습니다.</li>
+              <li>변경된 일정은 해당 날짜 범위에만 적용됩니다.</li>
+              <li>최대 1년(365일)까지 선택 가능합니다.</li>
+            </ul>
           </div>
         </div>
         
@@ -102,7 +117,7 @@ const DateRangeEditor = ({ startDate, endDate, onDateUpdate, onClose }) => {
             취소
           </button>
           <button className="save-button" onClick={handleSave}>
-            저장
+            일정 편집하기
           </button>
         </div>
       </div>
@@ -111,4 +126,3 @@ const DateRangeEditor = ({ startDate, endDate, onDateUpdate, onClose }) => {
 };
 
 export default DateRangeEditor;
-

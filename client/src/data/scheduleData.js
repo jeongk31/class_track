@@ -108,20 +108,37 @@ export const getClassesForDay = (weeklySchedule, dayOfWeek) => {
   return Object.values(daySchedule).filter(classId => classId !== null);
 };
 
-// Get classes for a specific date
-export const getClassesForDate = (weeklySchedule, date) => {
+// Get classes for a specific date (checks daily schedule first, then falls back to weekly)
+export const getClassesForDate = (weeklySchedule, date, dailySchedules = {}) => {
+  const dateStr = formatDate(date);
+  
+  // Check if there's a daily schedule override for this date
+  if (dailySchedules[dateStr]) {
+    return Object.values(dailySchedules[dateStr]).filter(classId => classId !== null);
+  }
+  
+  // Fall back to weekly schedule
   const dayOfWeek = DAYS_OF_WEEK[date.getDay()];
   return getClassesForDay(weeklySchedule, dayOfWeek);
 };
 
-// Get class for specific day and period
-export const getClassForPeriod = (weeklySchedule, dayOfWeek, period) => {
+// Get class for specific day and period (checks daily schedule first, then falls back to weekly)
+export const getClassForPeriod = (weeklySchedule, dayOfWeek, period, date = null, dailySchedules = {}) => {
+  // If date is provided, check daily schedule first
+  if (date) {
+    const dateStr = formatDate(date);
+    if (dailySchedules[dateStr]) {
+      return dailySchedules[dateStr][period] || null;
+    }
+  }
+  
+  // Fall back to weekly schedule
   const daySchedule = weeklySchedule[dayOfWeek] || {};
   return daySchedule[period] || null;
 };
 
 // Generate calendar events for a month
-export const generateCalendarEvents = (weeklySchedule, year, month, startDate, endDate) => {
+export const generateCalendarEvents = (weeklySchedule, year, month, startDate, endDate, dailySchedules = {}) => {
   const events = [];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const semesterStart = new Date(startDate);
@@ -132,7 +149,7 @@ export const generateCalendarEvents = (weeklySchedule, year, month, startDate, e
     
     // Check if date is within semester period
     if (date >= semesterStart && date <= semesterEnd) {
-      const classes = getClassesForDate(weeklySchedule, date);
+      const classes = getClassesForDate(weeklySchedule, date, dailySchedules);
       
       if (classes.length > 0) {
         events.push({

@@ -29,6 +29,7 @@ let scheduleData = {
     { id: 10, name: 'Class 10', color: '#85C1E9' },
     { id: 11, name: '동아리', color: '#F8C471' }
   ],
+  // Default weekly template for generating daily schedules
   weeklySchedule: {
     monday: { 1: null, 2: null, 3: 4, 4: null, 5: 6, 6: null, 7: 10 },
     tuesday: { 1: 1, 2: null, 3: 3, 4: null, 5: null, 6: 7, 7: null },
@@ -38,6 +39,8 @@ let scheduleData = {
     saturday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
     sunday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null }
   },
+  // Daily schedules - overrides weekly template for specific dates
+  dailySchedules: {},
   startDate: '2025-08-01',
   endDate: '2026-05-31',
   classStatus: {},
@@ -116,6 +119,53 @@ app.put('/api/schedule/comments', (req, res) => {
 // Update holidays
 app.put('/api/schedule/holidays', (req, res) => {
   scheduleData.holidays = req.body;
+  res.json(scheduleData);
+});
+
+// Update daily schedules for a specific date range
+app.put('/api/schedule/daily', (req, res) => {
+  const { startDate, endDate, schedule } = req.body;
+  
+  // Validate input
+  if (!startDate || !endDate || !schedule) {
+    return res.status(400).json({ error: 'Missing required fields: startDate, endDate, schedule' });
+  }
+  
+  // Update daily schedules for the date range
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+    const dateStr = date.toISOString().split('T')[0];
+    scheduleData.dailySchedules[dateStr] = schedule;
+  }
+  
+  res.json(scheduleData);
+});
+
+// Get daily schedule for a specific date
+app.get('/api/schedule/daily/:date', (req, res) => {
+  const { date } = req.params;
+  const dailySchedule = scheduleData.dailySchedules[date] || null;
+  res.json({ date, schedule: dailySchedule });
+});
+
+// Clear daily schedules for a date range
+app.delete('/api/schedule/daily', (req, res) => {
+  const { startDate, endDate } = req.body;
+  
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: 'Missing required fields: startDate, endDate' });
+  }
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+    const dateStr = date.toISOString().split('T')[0];
+    delete scheduleData.dailySchedules[dateStr];
+  }
+  
   res.json(scheduleData);
 });
 

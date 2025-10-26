@@ -100,5 +100,44 @@ export const api = {
       throw new Error('Failed to update holidays');
     }
     return response.json();
+  },
+
+  // Update daily schedules for a date range
+  updateDailySchedule: async (startDate, endDate, schedule) => {
+    const response = await fetch(`${API_BASE_URL}/api/schedule/daily`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ startDate, endDate, schedule }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update daily schedule');
+    }
+    return response.json();
+  },
+
+  // Get daily schedule for a specific date
+  getDailySchedule: async (date) => {
+    const response = await fetch(`${API_BASE_URL}/api/schedule/daily/${date}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch daily schedule');
+    }
+    return response.json();
+  },
+
+  // Clear daily schedules for a date range
+  clearDailySchedule: async (startDate, endDate) => {
+    const response = await fetch(`${API_BASE_URL}/api/schedule/daily`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ startDate, endDate }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to clear daily schedule');
+    }
+    return response.json();
   }
 };

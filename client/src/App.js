@@ -15,6 +15,7 @@ function App() {
   const [scheduleData, setScheduleData] = useState({
     classes: generateClasses(),
     weeklySchedule: generateDefaultWeeklySchedule(),
+    dailySchedules: {},
     ...generateDefaultSemesterDates(),
     classStatus: generateDefaultClassStatus(),
     comments: generateDefaultComments(),
@@ -23,6 +24,7 @@ function App() {
   const [showScheduleEditor, setShowScheduleEditor] = useState(false);
   const [showDateRangeEditor, setShowDateRangeEditor] = useState(false);
   const [showHolidayEditor, setShowHolidayEditor] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -92,6 +94,23 @@ function App() {
     } catch (err) {
       console.error('Failed to update holidays:', err);
       setError('공휴일 업데이트에 실패했습니다.');
+    }
+  };
+
+  const handleDateRangeSelect = (startDate, endDate) => {
+    setSelectedDateRange({ startDate, endDate });
+    setShowDateRangeEditor(false);
+    setShowScheduleEditor(true);
+  };
+
+  const handleDailyScheduleSave = async (startDate, endDate, schedule) => {
+    try {
+      const updatedData = await api.updateDailySchedule(startDate, endDate, schedule);
+      setScheduleData(updatedData);
+    } catch (err) {
+      console.error('Failed to update daily schedule:', err);
+      setError('일정 업데이트에 실패했습니다.');
+      throw err; // Re-throw to let ScheduleEditor handle the error
     }
   };
 
@@ -184,7 +203,7 @@ function App() {
               className="action-button"
               onClick={() => setShowDateRangeEditor(true)}
             >
-              학기 날짜 설정
+              기간별 일정 편집
             </button>
             <button 
               className="action-button"
@@ -255,6 +274,7 @@ function App() {
             endDate={scheduleData.endDate}
             classStatus={scheduleData.classStatus}
             holidays={scheduleData.holidays}
+            dailySchedules={scheduleData.dailySchedules}
             onDateClick={handleDateClick}
             onClassStatusUpdate={handleClassStatusUpdate}
           />
@@ -270,6 +290,7 @@ function App() {
             classStatus={scheduleData.classStatus}
             comments={scheduleData.comments}
             holidays={scheduleData.holidays}
+            dailySchedules={scheduleData.dailySchedules}
             onClassStatusUpdate={handleClassStatusUpdate}
             onCommentsUpdate={handleCommentsUpdate}
           />
@@ -293,16 +314,21 @@ function App() {
           weeklySchedule={scheduleData.weeklySchedule}
           classes={scheduleData.classes}
           onScheduleUpdate={handleScheduleUpdate}
-          onClose={() => setShowScheduleEditor(false)}
+          onClose={() => {
+            setShowScheduleEditor(false);
+            setSelectedDateRange(null);
+          }}
+          dateRange={selectedDateRange}
+          onSave={handleDailyScheduleSave}
         />
       )}
 
       {showDateRangeEditor && (
         <DateRangeEditor
+          onDateRangeSelect={handleDateRangeSelect}
+          onClose={() => setShowDateRangeEditor(false)}
           startDate={scheduleData.startDate}
           endDate={scheduleData.endDate}
-          onDateUpdate={handleDateUpdate}
-          onClose={() => setShowDateRangeEditor(false)}
         />
       )}
 

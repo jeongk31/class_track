@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, getClassComment, setClassComment, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
-const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
+const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, dailySchedules, onClassStatusUpdate, onCommentsUpdate }) => {
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentDate);
   startOfWeek.setHours(0, 0, 0, 0); // Normalize to midnight
@@ -22,7 +22,11 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     date.setDate(startOfWeek.getDate() + i);
     date.setHours(0, 0, 0, 0); // Normalize to midnight
     const dayName = DAYS_OF_WEEK[date.getDay()];
-    const daySchedule = weeklySchedule[dayName] || {};
+    
+    // Check for daily schedule override first
+    const dateStr = date.toISOString().split('T')[0];
+    const daySchedule = dailySchedules[dateStr] || weeklySchedule[dayName] || {};
+    
     const isWithinSemester = date >= semesterStart && date <= semesterEnd;
     const isHolidayDay = isHoliday(date, holidays);
     

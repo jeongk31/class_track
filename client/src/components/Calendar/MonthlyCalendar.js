@@ -2,7 +2,7 @@ import React from 'react';
 import { DAYS_OF_WEEK_KOREAN, generateCalendarEvents, isClassCompleted, toggleClassCompletion, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
-const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, holidays, onDateClick, onClassStatusUpdate }) => {
+const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, holidays, dailySchedules, onDateClick, onClassStatusUpdate }) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   
@@ -19,7 +19,7 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endD
   const daysToSunday = startingDayOfWeek;
   
   // Generate calendar events for this month
-  const events = generateCalendarEvents(weeklySchedule, year, month, startDate, endDate);
+  const events = generateCalendarEvents(weeklySchedule, year, month, startDate, endDate, dailySchedules);
   
   // Create array of days to display
   const days = [];

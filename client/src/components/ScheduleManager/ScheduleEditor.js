@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY } from '../../data/scheduleData';
 import './ScheduleEditor.css';
 
-const ScheduleEditor = ({ weeklySchedule, classes, onScheduleUpdate, onClose }) => {
+const ScheduleEditor = ({ weeklySchedule, classes, onScheduleUpdate, onClose, dateRange, onSave }) => {
   const [localSchedule, setLocalSchedule] = useState(weeklySchedule);
   const [draggedClass, setDraggedClass] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   
@@ -44,9 +45,24 @@ const ScheduleEditor = ({ weeklySchedule, classes, onScheduleUpdate, onClose }) 
     }));
   };
   
-  const handleSave = () => {
-    onScheduleUpdate(localSchedule);
-    onClose();
+  const handleSave = async () => {
+    if (!dateRange) {
+      // Legacy behavior for weekly schedule updates
+      onScheduleUpdate(localSchedule);
+      onClose();
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await onSave(dateRange.startDate, dateRange.endDate, localSchedule);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+      alert('일정 저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   const handleCancel = () => {
@@ -74,7 +90,12 @@ const ScheduleEditor = ({ weeklySchedule, classes, onScheduleUpdate, onClose }) 
     <div className="schedule-editor-overlay">
       <div className="schedule-editor">
         <div className="editor-header">
-          <h2>주간 일정 편집</h2>
+          <h2>
+            {dateRange ? 
+              `일정 편집 (${new Date(dateRange.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(dateRange.endDate).toLocaleDateString('ko-KR')})` : 
+              '주간 일정 편집'
+            }
+          </h2>
           <button className="close-button" onClick={handleCancel}>
             ×
           </button>
@@ -174,11 +195,11 @@ const ScheduleEditor = ({ weeklySchedule, classes, onScheduleUpdate, onClose }) 
         </div>
         
         <div className="editor-actions">
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleCancel} disabled={isSaving}>
             취소
           </button>
-          <button className="save-button" onClick={handleSave}>
-            저장
+          <button className="save-button" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? '저장 중...' : '저장'}
           </button>
         </div>
       </div>

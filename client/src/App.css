@@ -23,39 +23,40 @@ body {
 
 /* Header Styles */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   color: white;
-  padding: 20px 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 25px;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.2rem;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .hello-kitty-icon {
-  width: 70px;
-  height: 70px;
+  width: 55px;
+  height: 55px;
   display: inline-block;
   animation: wave 2s ease-in-out infinite;
-  border-radius: 50%;
+  /* border-radius: 50%; */
   object-fit: contain;
-  background-color: white;
-  padding: 8px;
+  /* background-color: white; */
+  /* padding: 6px; */
 }
 
 @keyframes wave {
@@ -66,113 +67,108 @@ body {
 
 .header-actions {
   display: flex;
-  gap: 15px;
+  gap: 10px;
 }
 
 .action-button {
-  background: rgba(255, 255, 255, 0.2);
+  background: #3498db;
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 10px 20px;
-  border-radius: 8px;
+  border: 2px solid #3498db;
+  padding: 8px 16px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.85rem;
   transition: all 0.2s;
 }
 
 .action-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #2980b9;
+  border-color: #2980b9;
   transform: translateY(-1px);
-}
-
-/* Navigation Styles */
-.view-navigation {
-  background: white;
-  border-bottom: 1px solid #e9ecef;
-  padding: 15px 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.nav-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .view-buttons {
   display: flex;
-  gap: 5px;
+  gap: 4px;
 }
 
 .view-button {
-  background: white;
-  border: 2px solid #e9ecef;
-  padding: 10px 20px;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.85rem;
   transition: all 0.2s;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .view-button:hover {
-  border-color: #007bff;
-  color: #007bff;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  transform: scale(1.05);
 }
 
 .view-button.active {
-  background: #007bff;
-  border-color: #007bff;
+  background: #27ae60;
+  border-color: #27ae60;
   color: white;
 }
 
 .date-navigation {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
 }
 
 .nav-button {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 1rem;
   transition: all 0.2s;
-  color: #666;
+  color: white;
 }
 
 .nav-button:hover {
-  background: #e9ecef;
-  color: #333;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
 }
 
 .current-date-display {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #333;
-  min-width: 200px;
+  font-weight: 600;
+  color: white;
+  min-width: 210px;
   text-align: center;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  font-size: 1.1rem;
 }
 
 .today-button {
-  background: #28a745;
+  background: #e74c3c;
   color: white;
-  border: none;
+  border: 2px solid #e74c3c;
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.85rem;
   transition: all 0.2s;
 }
 
 .today-button:hover {
-  background: #218838;
+  background: #c0392b;
+  border-color: #c0392b;
   transform: translateY(-1px);
 }
 
@@ -299,5 +295,34 @@ body {
   .action-button {
     padding: 8px 12px;
     font-size: 0.9rem;
+  }
+}
+
+/* Loading Spinner Overlay */
+.updating-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

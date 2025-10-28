@@ -17,16 +17,16 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 // Sample data for classes and schedule
 let scheduleData = {
   classes: [
-    { id: 1, name: 'Class 1', color: '#FF6B6B' },
-    { id: 2, name: 'Class 2', color: '#4ECDC4' },
-    { id: 3, name: 'Class 3', color: '#45B7D1' },
-    { id: 4, name: 'Class 4', color: '#96CEB4' },
-    { id: 5, name: 'Class 5', color: '#FFEAA7' },
-    { id: 6, name: 'Class 6', color: '#DDA0DD' },
-    { id: 7, name: 'Class 7', color: '#98D8C8' },
-    { id: 8, name: 'Class 8', color: '#F7DC6F' },
-    { id: 9, name: 'Class 9', color: '#BB8FCE' },
-    { id: 10, name: 'Class 10', color: '#85C1E9' },
+    { id: 1, name: '1반', color: '#FF6B6B' },
+    { id: 2, name: '2반', color: '#4ECDC4' },
+    { id: 3, name: '3반', color: '#45B7D1' },
+    { id: 4, name: '4반', color: '#96CEB4' },
+    { id: 5, name: '5반', color: '#FFEAA7' },
+    { id: 6, name: '6반', color: '#DDA0DD' },
+    { id: 7, name: '7반', color: '#98D8C8' },
+    { id: 8, name: '8반', color: '#F7DC6F' },
+    { id: 9, name: '9반', color: '#BB8FCE' },
+    { id: 10, name: '10반', color: '#85C1E9' },
     { id: 11, name: '동아리', color: '#F8C471' }
   ],
   // Default weekly template for generating daily schedules

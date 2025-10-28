@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from './services/api';
-import { generateDefaultWeeklySchedule, generateDefaultHolidays } from './data/scheduleData';
+import { generateDefaultWeeklySchedule } from './data/scheduleData';
 import MonthlyCalendar from './components/Calendar/MonthlyCalendar';
 import WeeklyCalendar from './components/Calendar/WeeklyCalendar';
 import ScheduleEditor from './components/ScheduleManager/ScheduleEditor';
@@ -16,11 +16,13 @@ function App() {
   const [semesterRange, setSemesterRange] = useState(null);
   const [weeklySchedule, setWeeklySchedule] = useState(generateDefaultWeeklySchedule());
   const [classEntries, setClassEntries] = useState([]);
-  const [holidays, setHolidays] = useState(generateDefaultHolidays());
+  const [holidays, setHolidays] = useState([]);
+  const [holidayData, setHolidayData] = useState([]); // Full holiday data with names
   const [showScheduleEditor, setShowScheduleEditor] = useState(false);
   const [showDateRangeEditor, setShowDateRangeEditor] = useState(false);
   const [showHolidayEditor, setShowHolidayEditor] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
 
   // Load initial data on component mount
@@ -28,25 +30,26 @@ function App() {
     loadInitialData();
   }, []);
 
-  // Load class entries when semester range changes
+  // Load class entries on mount
   useEffect(() => {
-    if (semesterRange) {
-      loadClassEntries();
-    }
-  }, [semesterRange]);
+    loadClassEntries();
+  }, []);
 
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      
+
       // Load class types
       const types = await api.getClassTypes();
       setClassTypes(types);
-      
+
       // Load current semester range
       const semester = await api.getCurrentSemesterRange();
       setSemesterRange(semester);
-      
+
+      // Load holidays
+      await loadHolidays();
+
       setError(null);
     } catch (err) {
       console.error('Failed to load initial data:', err);
@@ -56,14 +59,22 @@ function App() {
     }
   };
 
-  const loadClassEntries = async () => {
-    if (!semesterRange) return;
-    
+  const loadHolidays = async () => {
     try {
-      const entries = await api.getClassEntries(
-        semesterRange.start_date,
-        semesterRange.end_date
-      );
+      const holidayDataFromDB = await api.getHolidays();
+      console.log('Setting holiday data to:', holidayDataFromDB);
+      setHolidayData(holidayDataFromDB);
+      setHolidays(holidayDataFromDB.map(h => h.date));
+    } catch (err) {
+      console.error('Failed to load holidays:', err);
+      setError('공휴일을 불러오는데 실패했습니다.');
+    }
+  };
+
+  const loadClassEntries = async () => {
+    try {
+      // Load all class entries without date filtering
+      const entries = await api.getAllClassEntries();
       setClassEntries(entries);
     } catch (err) {
       console.error('Failed to load class entries:', err);
@@ -120,18 +131,20 @@ function App() {
 
   const handleClassStatusUpdate = async (date, classId, period, status) => {
     try {
+      setUpdating(true);
       // Find the entry for this date, class, and period
-      const dateStr = date.toISOString().split('T')[0];
+      // Handle both Date objects and date strings
+      const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
       const entry = classEntries.find(
         e => e.date === dateStr && e.class_type_id === classId && e.period === period
       );
-      
+
       if (entry) {
         await api.updateClassEntryStatus(entry.id, status);
-        
+
         // Update local state
-        setClassEntries(prev => 
-          prev.map(e => 
+        setClassEntries(prev =>
+          prev.map(e =>
             e.id === entry.id ? { ...e, status } : e
           )
         );
@@ -139,6 +152,8 @@ function App() {
     } catch (err) {
       console.error('Failed to update class status:', err);
       setError('수업 상태 업데이트에 실패했습니다.');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -149,19 +164,20 @@ function App() {
         console.error(`Invalid period value: ${period}. Must be between 1 and 7.`);
         return;
       }
-      
+
       // Find the entry for this date, class, and period
-      const dateStr = date.toISOString().split('T')[0];
+      // Handle both Date objects and date strings
+      const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
       const entry = classEntries.find(
         e => e.date === dateStr && e.class_type_id === classId && e.period === period
       );
-      
+
       if (entry) {
         await api.updateClassEntryNotes(entry.id, notes);
-        
+
         // Update local state
-        setClassEntries(prev => 
-          prev.map(e => 
+        setClassEntries(prev =>
+          prev.map(e =>
             e.id === entry.id ? { ...e, notes } : e
           )
         );
@@ -179,12 +195,23 @@ function App() {
     }
   };
 
-  const handleHolidaysUpdate = async (newHolidays) => {
+  const handleAddHoliday = async (date, name) => {
     try {
-      setHolidays(newHolidays);
+      await api.addHoliday(date, name || '공휴일');
+      await loadHolidays();
     } catch (err) {
-      console.error('Failed to update holidays:', err);
-      setError('공휴일 업데이트에 실패했습니다.');
+      console.error('Failed to add holiday:', err);
+      setError('공휴일 추가에 실패했습니다.');
+    }
+  };
+
+  const handleRemoveHoliday = async (date) => {
+    try {
+      await api.deleteHoliday(date);
+      await loadHolidays();
+    } catch (err) {
+      console.error('Failed to remove holiday:', err);
+      setError('공휴일 삭제에 실패했습니다.');
     }
   };
 
@@ -235,43 +262,46 @@ function App() {
 
   // Convert class entries to the format expected by components
   const getClassStatusForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Handle both Date objects and date strings
+    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
     const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
-    
+
     const status = {};
     entriesForDate.forEach(entry => {
       const key = `${entry.class_type_id}-${entry.period}`;
       status[key] = entry.status;
     });
-    
+
     return status;
   };
 
   const getCommentsForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Handle both Date objects and date strings
+    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
     const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
-    
+
     const comments = {};
     entriesForDate.forEach(entry => {
       const key = `${entry.class_type_id}-${entry.period}`;
       comments[key] = entry.notes;
     });
-    
+
     return comments;
   };
-  
+
   // Get classes for a specific date from database entries
   const getClassesForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Handle both Date objects and date strings
+    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
     const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
-    
+
     const classIds = new Set();
     entriesForDate.forEach(entry => {
       if (entry.class_type_id !== null) {
         classIds.add(entry.class_type_id);
       }
     });
-    
+
     return Array.from(classIds);
   };
 
@@ -298,64 +328,45 @@ function App() {
 
   return (
     <div className="app">
+      {updating && (
+        <div className="updating-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
       <header className="app-header">
         <div className="header-content">
           <h1>
-            <img 
-              src="/icon.png" 
-              alt="Hello Kitty" 
+            <img
+              src="/icon.png"
+              alt="Hello Kitty"
               className="hello-kitty-icon"
             />
             수업 일정
           </h1>
-          <div className="header-actions">
-            <button 
-              className="action-button"
-              onClick={() => setShowScheduleEditor(true)}
-            >
-              주간 일정 편집
-            </button>
-            <button 
-              className="action-button"
-              onClick={() => setShowDateRangeEditor(true)}
-            >
-              학기 날짜 설정
-            </button>
-            <button 
-              className="action-button"
-              onClick={() => setShowHolidayEditor(true)}
-            >
-              공휴일 편집
-            </button>
-          </div>
-        </div>
-      </header>
 
-      <nav className="view-navigation">
-        <div className="nav-content">
           <div className="view-buttons">
-            <button 
+            <button
               className={`view-button ${viewMode === 'monthly' ? 'active' : ''}`}
               onClick={() => setViewMode('monthly')}
             >
               월간
             </button>
-            <button 
+            <button
               className={`view-button ${viewMode === 'weekly' ? 'active' : ''}`}
               onClick={() => setViewMode('weekly')}
             >
               주간
             </button>
-            <button 
+            <button
               className={`view-button ${viewMode === 'statistics' ? 'active' : ''}`}
               onClick={() => setViewMode('statistics')}
             >
               통계
             </button>
           </div>
-          
+
           <div className="date-navigation">
-            <button 
+            <button
               className="nav-button"
               onClick={() => navigateDate(-1)}
             >
@@ -364,21 +375,36 @@ function App() {
             <div className="current-date-display">
               {formatCurrentDate()}
             </div>
-            <button 
+            <button
               className="nav-button"
               onClick={() => navigateDate(1)}
             >
               →
             </button>
-            <button 
+            <button
               className="today-button"
               onClick={goToToday}
             >
               오늘
             </button>
           </div>
+
+          <div className="header-actions">
+            <button
+              className="action-button"
+              onClick={() => setShowScheduleEditor(true)}
+            >
+              주간 일정표 수정
+            </button>
+            <button
+              className="action-button"
+              onClick={() => setShowHolidayEditor(true)}
+            >
+              공휴일 편집
+            </button>
+          </div>
         </div>
-      </nav>
+      </header>
 
       <main className="app-main">
         {viewMode === 'monthly' && semesterRange && (
@@ -418,8 +444,10 @@ function App() {
             startDate={semesterRange.start_date}
             endDate={semesterRange.end_date}
             classStatus={getClassStatusForDate}
+            classEntries={classEntries}
             holidays={holidays}
             classes={classTypes}
+            onDateUpdate={handleDateUpdate}
           />
         )}
         
@@ -447,7 +475,9 @@ function App() {
       {showHolidayEditor && (
         <HolidayEditor
           holidays={holidays}
-          onHolidaysUpdate={handleHolidaysUpdate}
+          holidayData={holidayData}
+          onAddHoliday={handleAddHoliday}
+          onRemoveHoliday={handleRemoveHoliday}
           onClose={() => setShowHolidayEditor(false)}
         />
       )}

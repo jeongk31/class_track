@@ -17,14 +17,62 @@
 }
 
 .statistics-header h2 {
-  margin: 0 0 10px 0;
+  margin: 0 0 15px 0;
   color: #333;
   font-size: 1.8rem;
 }
 
-.semester-info {
-  color: #666;
-  font-size: 1rem;
+.date-range-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+.date-range-selector .date-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-range-selector .date-input-group label {
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.date-range-selector .date-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.date-range-selector .date-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.date-range-selector .apply-button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  background: #007bff;
+  color: white;
+}
+
+.date-range-selector .apply-button:hover {
+  background: #0056b3;
 }
 
 .statistics-grid {

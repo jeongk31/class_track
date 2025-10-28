@@ -37,7 +37,23 @@ export const api = {
       })
       .select()
       .single();
-    
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Get all class entries (no date filtering)
+  getAllClassEntries: async () => {
+    const { data, error } = await supabase
+      .from('class_entries')
+      .select(`
+        *,
+        class_types(name, color),
+        semester_ranges(start_date, end_date)
+      `)
+      .order('date')
+      .order('period');
+
     if (error) throw error;
     return data;
   },
@@ -55,7 +71,7 @@ export const api = {
       .lte('date', endDate)
       .order('date')
       .order('period');
-    
+
     if (error) throw error;
     return data;
   },
@@ -209,7 +225,7 @@ export const api = {
 
   // Get statistics for a date range
   getStatistics: async (startDate, endDate) => {
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('class_entries')
       .select(`
         *,
@@ -217,13 +233,13 @@ export const api = {
       `)
       .gte('date', startDate)
       .lte('date', endDate);
-    
+
     if (error) throw error;
-    
+
     const totalClasses = data.length;
     const completedClasses = data.filter(entry => entry.status).length;
     const classStats = {};
-    
+
     data.forEach(entry => {
       const classId = entry.class_type_id;
       if (!classStats[classId]) {
@@ -239,12 +255,50 @@ export const api = {
         classStats[classId].completed++;
       }
     });
-    
+
     return {
       totalClasses,
       completedClasses,
       remainingClasses: totalClasses - completedClasses,
       classStats
     };
+  },
+
+  // Get all holidays
+  getHolidays: async () => {
+    const { data, error } = await supabase
+      .from('holidays')
+      .select('date, name')
+      .order('date');
+
+    if (error) throw error;
+    console.log('Raw holiday data from DB:', data);
+    return data; // Return full objects with date and name
+  },
+
+  // Add a holiday
+  addHoliday: async (date, name = '공휴일') => {
+    const { data, error } = await supabase
+      .from('holidays')
+      .insert({
+        date: date,
+        name: name
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Delete a holiday
+  deleteHoliday: async (date) => {
+    const { error } = await supabase
+      .from('holidays')
+      .delete()
+      .eq('date', date);
+
+    if (error) throw error;
+    return true;
   }
 };

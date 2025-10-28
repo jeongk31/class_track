@@ -22,33 +22,31 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
   const events = [];
   if (classEntries && classEntries.length > 0) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const semesterStart = new Date(startDate);
-    semesterStart.setHours(0, 0, 0, 0);
-    const semesterEnd = new Date(endDate);
-    semesterEnd.setHours(0, 0, 0, 0);
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       date.setHours(0, 0, 0, 0);
-      
-      if (date >= semesterStart && date <= semesterEnd) {
-        const dateStr = date.toISOString().split('T')[0];
-        const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
-        
-        if (entriesForDate.length > 0) {
-          const classIds = new Set();
-          entriesForDate.forEach(entry => {
-            if (entry.class_type_id !== null) {
-              classIds.add(entry.class_type_id);
-            }
-          });
-          
-          if (classIds.size > 0) {
-            events.push({
-              date: new Date(date),
-              classes: Array.from(classIds)
+
+      const dateStr = date.toISOString().split('T')[0];
+      const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
+
+      if (entriesForDate.length > 0) {
+        // Store full entries with period information
+        const classEntryList = [];
+        entriesForDate.forEach(entry => {
+          if (entry.class_type_id !== null) {
+            classEntryList.push({
+              classId: entry.class_type_id,
+              period: entry.period
             });
           }
+        });
+
+        if (classEntryList.length > 0) {
+          events.push({
+            date: new Date(date),
+            classEntries: classEntryList
+          });
         }
       }
     }
@@ -66,23 +64,16 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day);
     date.setHours(0, 0, 0, 0); // Normalize to midnight
-    const dayEvents = events.find(event => 
+    const dayEvents = events.find(event =>
       event.date.getDate() === day
     );
-    
-    // Check if date is within semester period
-    const semesterStart = new Date(startDate);
-    semesterStart.setHours(0, 0, 0, 0);
-    const semesterEnd = new Date(endDate);
-    semesterEnd.setHours(0, 0, 0, 0);
-    const isWithinSemester = date >= semesterStart && date <= semesterEnd;
+
     const isHolidayDay = isHoliday(date, holidays);
-    
+
     days.push({
       day,
       date,
-      classes: dayEvents ? dayEvents.classes : [],
-      isWithinSemester,
+      classEntries: dayEvents ? dayEvents.classEntries : [],
       isHoliday: isHolidayDay
     });
   }
@@ -92,16 +83,20 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
     return classData ? classData.color : '#cccccc';
   };
 
-  const handleClassCheck = (e, date, classId) => {
+  const handleClassCheck = (e, date, classId, period) => {
     e.stopPropagation();
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId, null);
-    onClassStatusUpdate(newClassStatus);
+    const statusForDate = classStatus(date);
+    const key = `${classId}-${period}`;
+    const currentStatus = statusForDate[key] || false;
+    onClassStatusUpdate(date, classId, period, !currentStatus);
   };
 
-  const handleClassClick = (e, date, classId) => {
+  const handleClassClick = (e, date, classId, period) => {
     e.stopPropagation();
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId, null);
-    onClassStatusUpdate(newClassStatus);
+    const statusForDate = classStatus(date);
+    const key = `${classId}-${period}`;
+    const currentStatus = statusForDate[key] || false;
+    onClassStatusUpdate(date, classId, period, !currentStatus);
   };
   
   const formatMonthYear = (date) => {
@@ -130,10 +125,10 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
         {/* Calendar days */}
         <div className="calendar-days">
           {days.map((dayData, index) => (
-            <div 
-              key={index} 
-              className={`calendar-day ${dayData ? 'has-content' : 'empty'} ${dayData && !dayData.isWithinSemester ? 'outside-semester' : ''} ${dayData && dayData.isHoliday ? 'holiday' : ''}`}
-              onClick={() => dayData && dayData.isWithinSemester && !dayData.isHoliday && onDateClick(dayData.date)}
+            <div
+              key={index}
+              className={`calendar-day ${dayData ? 'has-content' : 'empty'} ${dayData && dayData.isHoliday ? 'holiday' : ''}`}
+              onClick={() => dayData && !dayData.isHoliday && onDateClick(dayData.date)}
             >
               {dayData && (
                 <>
@@ -143,22 +138,26 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
                       <span>공휴일</span>
                     </div>
                   )}
-                  {dayData.isWithinSemester && !dayData.isHoliday && dayData.classes.length > 0 && (
+                  {!dayData.isHoliday && dayData.classEntries && dayData.classEntries.length > 0 && (
                     <div className="day-classes">
-                      {dayData.classes.map(classId => {
+                      {dayData.classEntries.map((entry, idx) => {
+                        const classId = entry.classId;
+                        const period = entry.period;
                         const classData = classes.find(c => c.id === classId);
-                        const isCompleted = isClassCompleted(classStatus, dayData.date, classId, null);
+                        const statusForDate = classStatus(dayData.date);
+                        const key = `${classId}-${period}`;
+                        const isCompleted = statusForDate[key] || false;
                         return (
                           <div
-                            key={classId}
+                            key={`${classId}-${period}-${idx}`}
                             className={`class-bar ${isCompleted ? 'completed' : ''}`}
                             style={{ backgroundColor: getClassColor(classId) }}
-                            title={classData ? classData.name : `Class ${classId}`}
-                            onClick={(e) => handleClassClick(e, dayData.date, classId)}
+                            title={classData ? classData.name : `${classId}반`}
+                            onClick={(e) => handleClassClick(e, dayData.date, classId, period)}
                           >
                             <button
                               className="class-check-button"
-                              onClick={(e) => handleClassCheck(e, dayData.date, classId)}
+                              onClick={(e) => handleClassCheck(e, dayData.date, classId, period)}
                               title={isCompleted ? '완료 취소' : '완료 표시'}
                             >
                               {isCompleted ? '✓' : '○'}
@@ -169,11 +168,6 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
                           </div>
                         );
                       })}
-                    </div>
-                  )}
-                  {!dayData.isWithinSemester && !dayData.isHoliday && (
-                    <div className="outside-semester-indicator">
-                      <span>학기 외</span>
                     </div>
                   )}
                 </>

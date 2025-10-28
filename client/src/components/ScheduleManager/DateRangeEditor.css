@@ -33,7 +33,7 @@
 
 .editor-header h2 {
   margin: 0;
-  color: #333;
+  color: white;
 }
 
 .close-button {
@@ -64,7 +64,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  margin-bottom: 30px;
+  /* margin-bottom: 30px; */
 }
 
 .date-input-group {

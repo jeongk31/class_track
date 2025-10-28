@@ -6,8 +6,8 @@ export const CLASS_COLORS = [
 ];
 
 export const CLASS_NAMES = [
-  'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5',
-  'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', '동아리'
+  '1반', '2반', '3반', '4반', '5반',
+  '6반', '7반', '8반', '9반', '10반', '동아리'
 ];
 
 export const DAYS_OF_WEEK = [

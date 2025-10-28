@@ -39,8 +39,8 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
   const [draggedClass, setDraggedClass] = useState(null);
   const [startDate, setStartDate] = useState(getTodayDate());
   const [endDate, setEndDate] = useState(getTwoWeeksFromToday());
-  
-  const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+  const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
   
   const handleDragStart = (e, classId) => {
     setDraggedClass(classId);
@@ -100,19 +100,7 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
   const getClassInfo = (classId) => {
     return classes.find(c => c.id === classId);
   };
-  
-  const clearDay = (day) => {
-    const clearedDay = {};
-    for (let i = 1; i <= PERIODS_PER_DAY; i++) {
-      clearedDay[i] = null;
-    }
-    
-    setLocalSchedule(prev => ({
-      ...prev,
-      [day]: clearedDay
-    }));
-  };
-  
+
   const clearAllSchedule = () => {
     const emptySchedule = {};
     dayNames.forEach(day => {
@@ -128,7 +116,7 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
     <div className="schedule-editor-overlay">
       <div className="schedule-editor">
         <div className="editor-header">
-          <h2>주간 일정 편집</h2>
+          <h2>주간 일정표 수정</h2>
           <button className="close-button" onClick={handleCancel}>
             ×
           </button>
@@ -137,7 +125,6 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
         <div className="editor-content">
           {/* Date Range Section */}
           <div className="date-range-section">
-            <h3>적용 기간 설정</h3>
             <div className="date-inputs">
               <div className="date-input-group">
                 <label htmlFor="start-date">시작 날짜:</label>
@@ -159,13 +146,28 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
                   className="date-input"
                 />
               </div>
+              <button
+                className="clear-all-button"
+                onClick={clearAllSchedule}
+                title="전체 일정 초기화"
+              >
+                전체 초기화
+              </button>
+              <div className="date-range-actions">
+                <button className="cancel-button" onClick={handleCancel}>
+                  취소
+                </button>
+                <button className="save-button" onClick={handleSave}>
+                  저장
+                </button>
+              </div>
             </div>
           </div>
           
           <div className="schedule-controls">
             <div className="class-palette">
               <h3>수업 목록</h3>
-              <p className="instruction">수업을 드래그하여 원하는 교시에 배치하세요</p>
+              {/* <p className="instruction">수업을 드래그하여 원하는 교시에 배치하세요</p> */}
               <div className="classes-grid">
                 {classes.map(classData => (
                   <div
@@ -189,16 +191,9 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
             </div>
             
             <div className="schedule-grid">
-              <div className="schedule-header">
+              {/* <div className="schedule-header">
                 <h3>주간 일정표</h3>
-                <button 
-                  className="clear-all-button"
-                  onClick={clearAllSchedule}
-                  title="전체 일정 초기화"
-                >
-                  전체 초기화
-                </button>
-              </div>
+              </div> */}
               <div className="grid-container">
                 {/* Header row */}
                 <div className="grid-header">
@@ -206,13 +201,6 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
                   {dayNames.map((day, index) => (
                     <div key={day} className="day-header">
                       <div className="day-name">{DAYS_OF_WEEK_KOREAN[index + 1]}</div>
-                      <button 
-                        className="clear-day-button"
-                        onClick={() => clearDay(day)}
-                        title="해당 요일 초기화"
-                      >
-                        ×
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -263,15 +251,6 @@ const ScheduleEditor = ({ weeklySchedule, classes, semesterRange, onScheduleUpda
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="editor-actions">
-          <button className="cancel-button" onClick={handleCancel}>
-            취소
-          </button>
-          <button className="save-button" onClick={handleSave}>
-            저장
-          </button>
         </div>
       </div>
     </div>

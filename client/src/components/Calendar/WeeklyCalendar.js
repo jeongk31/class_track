@@ -14,37 +14,31 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
   
   // Generate week days
   const weekDays = [];
-  const semesterStart = new Date(startDate);
-  semesterStart.setHours(0, 0, 0, 0);
-  const semesterEnd = new Date(endDate);
-  semesterEnd.setHours(0, 0, 0, 0);
-  
+
   for (let i = 0; i < 7; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
     date.setHours(0, 0, 0, 0); // Normalize to midnight
     const dayName = DAYS_OF_WEEK[date.getDay()];
-    const isWithinSemester = date >= semesterStart && date <= semesterEnd;
     const isHolidayDay = isHoliday(date, holidays);
-    
+
     // Build schedule from database entries
     const daySchedule = {};
     if (classEntries) {
       const dateStr = date.toISOString().split('T')[0];
       const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
-      
+
       entriesForDate.forEach(entry => {
         if (entry.class_type_id !== null) {
           daySchedule[entry.period] = entry.class_type_id;
         }
       });
     }
-    
+
     weekDays.push({
       date,
       dayName,
       schedule: daySchedule,
-      isWithinSemester,
       isHoliday: isHolidayDay
     });
   }
@@ -55,13 +49,17 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
   };
 
   const handleClassCheck = (date, classId, period) => {
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId, period);
-    onClassStatusUpdate(newClassStatus);
+    const statusForDate = classStatus(date);
+    const key = `${classId}-${period}`;
+    const currentStatus = statusForDate[key] || false;
+    onClassStatusUpdate(date, classId, period, !currentStatus);
   };
 
   const handleClassClick = (date, classId, period) => {
-    const newClassStatus = toggleClassCompletion(classStatus, date, classId, period);
-    onClassStatusUpdate(newClassStatus);
+    const statusForDate = classStatus(date);
+    const key = `${classId}-${period}`;
+    const currentStatus = statusForDate[key] || false;
+    onClassStatusUpdate(date, classId, period, !currentStatus);
   };
 
   // Handle comment changes locally
@@ -137,14 +135,11 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
         <div className="weekly-day-headers">
           <div className="time-header">시간</div>
           {weekDays.map((dayData, index) => (
-            <div key={index} className={`weekly-day-header ${!dayData.isWithinSemester ? 'outside-semester' : ''} ${dayData.isHoliday ? 'holiday' : ''}`}>
+            <div key={index} className={`weekly-day-header ${dayData.isHoliday ? 'holiday' : ''}`}>
               <div className="day-name">{DAYS_OF_WEEK_KOREAN[dayData.date.getDay()]}</div>
               <div className="day-date">{dayData.date.getDate()}</div>
               {dayData.isHoliday && (
                 <div className="holiday-indicator">공휴일</div>
-              )}
-              {!dayData.isWithinSemester && !dayData.isHoliday && (
-                <div className="semester-indicator">학기 외</div>
               )}
             </div>
           ))}
@@ -158,8 +153,14 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
               <div className="period-number">{period}교시</div>
               {weekDays.map((dayData, dayIndex) => {
                 const classId = dayData.schedule[period];
-                const hasClass = classId !== null && classId !== undefined && dayData.isWithinSemester && !dayData.isHoliday;
-                const isCompleted = hasClass ? isClassCompleted(classStatus, dayData.date, classId, period) : false;
+                const hasClass = classId !== null && classId !== undefined && !dayData.isHoliday;
+
+                let isCompleted = false;
+                if (hasClass) {
+                  const statusForDate = classStatus(dayData.date);
+                  const key = `${classId}-${period}`;
+                  isCompleted = statusForDate[key] || false;
+                }
 
                 // Get comment directly from classEntries database
                 let comment = '';
@@ -172,9 +173,9 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
                 }
 
                 return (
-                  <div 
-                    key={dayIndex} 
-                    className={`period-cell ${hasClass ? 'has-class' : 'no-class'} ${!dayData.isWithinSemester ? 'outside-semester' : ''} ${dayData.isHoliday ? 'holiday' : ''}`}
+                  <div
+                    key={dayIndex}
+                    className={`period-cell ${hasClass ? 'has-class' : 'no-class'} ${dayData.isHoliday ? 'holiday' : ''}`}
                   >
                     {hasClass && (
                       <div className="weekly-class-container">
@@ -220,9 +221,6 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
                     )}
                     {dayData.isHoliday && (
                       <div className="holiday-text">공휴일</div>
-                    )}
-                    {!dayData.isWithinSemester && !dayData.isHoliday && (
-                      <div className="outside-semester-text">-</div>
                     )}
                   </div>
                 );

@@ -108,9 +108,9 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
   
   return (
     <div className="monthly-calendar">
-      <div className="calendar-header">
-        <h2>{formatMonthYear(currentDate)}</h2>
-      </div>
+      {/* <div className="calendar-header"> */}
+        {/* <h2>{formatMonthYear(currentDate)}</h2> */}
+      {/* </div> */}
       
       <div className="calendar-grid">
         {/* Day headers */}

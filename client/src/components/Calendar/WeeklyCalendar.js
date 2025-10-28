@@ -1,21 +1,21 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
 const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate, classStatus, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
-  const [pendingComments, setPendingComments] = useState({});
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  // Get the start of the week (Sunday)
+  const saveTimeoutRef = useRef({});
+  const [hasPendingSaves, setHasPendingSaves] = useState(false);
+  // Get the start of the week (Monday)
   const startOfWeek = new Date(currentDate);
   startOfWeek.setHours(0, 0, 0, 0); // Normalize to midnight
   const dayOfWeek = currentDate.getDay();
-  const daysToSunday = -dayOfWeek; // Sunday = 0, Monday = 1, etc.
-  startOfWeek.setDate(currentDate.getDate() + daysToSunday);
-  
-  // Generate week days
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Monday = 1
+  startOfWeek.setDate(currentDate.getDate() + daysToMonday);
+
+  // Generate week days (Monday to Friday only)
   const weekDays = [];
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 5; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
     date.setHours(0, 0, 0, 0); // Normalize to midnight
@@ -62,73 +62,63 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
     onClassStatusUpdate(date, classId, period, !currentStatus);
   };
 
-  // Handle comment changes locally
+  // Handle comment changes with auto-save debounce
   const handleCommentChange = useCallback((date, classId, period, value) => {
     // Validate period is within allowed range
     if (period < 1 || period > PERIODS_PER_DAY) {
       console.warn(`Invalid period value: ${period}. Must be between 1 and ${PERIODS_PER_DAY}`);
       return;
     }
-    
+
     const dateStr = date.toISOString().split('T')[0];
     const key = `${dateStr}-${classId}-${period}`;
-    
-    setPendingComments(prev => ({
-      ...prev,
-      [key]: value
-    }));
-    setHasUnsavedChanges(true);
+
+    // Clear existing timeout for this specific comment
+    if (saveTimeoutRef.current[key]) {
+      clearTimeout(saveTimeoutRef.current[key]);
+    }
+
+    // Mark as having pending saves
+    setHasPendingSaves(true);
+
+    // Set new timeout to auto-save after 500ms of no typing
+    saveTimeoutRef.current[key] = setTimeout(() => {
+      onCommentsUpdate(date, classId, period, value);
+      delete saveTimeoutRef.current[key];
+
+      // Check if there are any remaining pending saves
+      if (Object.keys(saveTimeoutRef.current).length === 0) {
+        setHasPendingSaves(false);
+      }
+    }, 500);
+  }, [onCommentsUpdate]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(saveTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
+    };
   }, []);
 
-  // Save all pending comments
-  const saveAllComments = useCallback(() => {
-    Object.entries(pendingComments).forEach(([key, value]) => {
-      // Parse key format: "2025-01-01-10-1"
-      const parts = key.split('-');
-      if (parts.length >= 5) {
-        const classIdStr = parts[3];
-        const periodStr = parts[4];
-        const classId = parseInt(classIdStr);
-        const period = parseInt(periodStr);
-        
-        // Validate period before saving
-        if (period >= 1 && period <= PERIODS_PER_DAY && !isNaN(period)) {
-          const dateStr = parts.slice(0, 3).join('-');
-          const date = new Date(dateStr);
-          onCommentsUpdate(date, classId, period, value);
-        } else {
-          console.error(`Skipping invalid period ${period} for class ${classId}`);
-        }
-      } else {
-        console.error(`Invalid key format: ${key}`);
+  // Add beforeunload warning if there are pending saves
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasPendingSaves) {
+        e.preventDefault();
+        e.returnValue = ''; // Modern browsers require this
+        return ''; // For older browsers
       }
-    });
-    
-    setPendingComments({});
-    setHasUnsavedChanges(false);
-  }, [pendingComments, onCommentsUpdate]);
-  
-  const formatWeekRange = () => {
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday is 6 days after Monday
-    
-    return `${startOfWeek.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`;
-  };
-  
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasPendingSaves]);
+
   return (
     <div className="weekly-calendar">
-      <div className="calendar-header">
-        <h2>주간 일정 - {formatWeekRange()}</h2>
-        {hasUnsavedChanges && (
-          <button 
-            className="save-comments-button"
-            onClick={saveAllComments}
-            title="변경사항 저장"
-          >
-            💾 저장
-          </button>
-        )}
-      </div>
       
       <div className="weekly-grid">
         {/* Day headers */}

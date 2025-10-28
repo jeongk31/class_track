@@ -37,9 +37,9 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 95vw;
+  padding: 16px;
+  margin: 0 auto;
+  max-width: 1400px;
   width: 100%;
 }
 
@@ -52,16 +52,17 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .day-header {
   background: #f8f9fa;
-  padding: 10px;
+  padding: 8px;
   text-align: center;
   font-weight: bold;
   color: #666;
   border: 1px solid #e9ecef;
+  font-size: 0.9rem;
 }
 
 .calendar-days {
@@ -71,9 +72,9 @@
 }
 
 .calendar-day {
-  min-height: 140px;
+  min-height: 112px;
   border: 1px solid #e9ecef;
-  padding: 4px;
+  padding: 3px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -103,28 +104,29 @@
 
 .day-number {
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: #333;
+  font-size: 0.85rem;
 }
 
 .day-classes {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1.5px;
 }
 
 .class-bar {
-  padding: 1px 5px;
-  border-radius: 2px;
+  padding: 0px 2px;
+  border-radius: 5px;
   color: white;
-  font-size: 0.7rem;
+  font-size: 0.31rem;
   font-weight: bold;
   text-align: left;
-  min-height: 16px;
+  min-height: 7px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 3px;
+  gap: 1px;
 }
 
 .class-bar.completed {
@@ -147,11 +149,11 @@
   background: none;
   border: none;
   color: white;
-  font-size: 0.7rem;
+  font-size: 0.31rem;
   cursor: pointer;
   padding: 0;
-  width: 18px;
-  height: 18px;
+  width: 8px;
+  height: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,10 +173,10 @@
 }
 
 .outside-semester-indicator {
-  font-size: 0.7rem;
+  font-size: 0.56rem;
   color: #999;
   text-align: center;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 /* Holiday styling */
@@ -184,18 +186,18 @@
 }
 
 .holiday-indicator {
-  font-size: 0.7rem;
+  font-size: 0.56rem;
   color: #856404;
   text-align: center;
-  margin-top: 5px;
+  margin-top: 4px;
   font-weight: 500;
 }
 
 .holiday-text {
   color: #856404;
-  font-size: 0.7rem;
+  font-size: 0.56rem;
   text-align: center;
-  margin-top: 10px;
+  margin-top: 8px;
   font-weight: 500;
 }
 
@@ -204,10 +206,10 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 95vw;
+  padding: 10px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .weekly-grid {
@@ -217,14 +219,14 @@
 
 .weekly-day-headers {
   display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
+  grid-template-columns: 60px repeat(5, 1fr);
   gap: 1px;
   margin-bottom: 10px;
 }
 
 .time-header {
   background: #f8f9fa;
-  padding: 10px;
+  padding: 6px;
   text-align: center;
   font-weight: bold;
   color: #666;
@@ -232,11 +234,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.8rem;
 }
 
 .weekly-day-header {
   background: #f8f9fa;
-  padding: 10px;
+  padding: 6px;
   text-align: center;
   border: 1px solid #e9ecef;
 }
@@ -249,24 +252,25 @@
 .day-name {
   font-weight: bold;
   color: #666;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
+  font-size: 0.8rem;
 }
 
 .day-date {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   color: #333;
 }
 
 .weekly-period-row {
   display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
+  grid-template-columns: 60px repeat(5, 1fr);
   gap: 1px;
   margin-bottom: 1px;
 }
 
-.period-number {
+.weekly-calendar .period-number {
   background: #f8f9fa;
-  padding: 15px 10px;
+  padding: 0;
   text-align: center;
   font-weight: bold;
   color: #666;
@@ -274,25 +278,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.8rem;
+  height: 108px;
 }
 
-.period-cell {
-  min-height: 140px;
+.weekly-calendar .period-cell {
   border: 1px solid #e9ecef;
   padding: 0;
   margin: 0;
   transition: background-color 0.2s;
+  height: 108px;
+  display: flex;
+  flex-direction: column;
 }
 
-.period-cell.has-class {
+.weekly-calendar .period-cell.has-class {
   background-color: #e3f2fd;
 }
 
-.period-cell.no-class {
+.weekly-calendar .period-cell.no-class {
   background-color: white;
 }
 
-.period-cell.outside-semester {
+.weekly-calendar .period-cell.outside-semester {
   background-color: #f8f9fa;
   opacity: 0.6;
 }
@@ -551,15 +559,16 @@
 
 .comment-textarea {
   width: 100%;
-  min-height: 60px;
-  padding: 2px 0;
+  height: 100%;
+  padding: 4px;
   border: none;
   border-radius: 0;
   font-size: 0.6rem;
-  resize: vertical;
+  resize: none;
   font-family: inherit;
   background: transparent;
   margin: 0;
+  box-sizing: border-box;
 }
 
 /* Weekly Calendar Class Bar Styles */
@@ -568,21 +577,21 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .weekly-class-bar {
-  padding: 0 5px;
-  border-radius: 0;
+  padding: 0 2px;
+  border-radius: 6px;
   color: white;
-  font-size: 0.6rem;
+  font-size: 0.28rem;
   font-weight: bold;
   text-align: left;
-  min-height: 20px;
+  min-height: 7px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 3px;
+  gap: 1px;
   width: 100%;
 }
 
@@ -596,7 +605,7 @@
   top: 50%;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 1px;
   background-color: #dc3545;
   transform: translateY(-50%);
   z-index: 1;
@@ -606,11 +615,11 @@
   background: none;
   border: none;
   color: white;
-  font-size: 0.7rem;
+  font-size: 0.31rem;
   cursor: pointer;
   padding: 0;
-  width: 18px;
-  height: 18px;
+  width: 7px;
+  height: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -633,6 +642,8 @@
   margin: 0;
   padding: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Daily Calendar Class Bar Styles */
@@ -722,92 +733,113 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .monthly-calendar,
-  .weekly-calendar {
+  .monthly-calendar {
     max-width: 98vw;
-    padding: 15px;
+    padding: 12px;
   }
-  
+
+  .weekly-calendar {
+    padding: 10px;
+  }
+
   .calendar-day {
-    min-height: 120px;
+    min-height: 96px;
   }
-  
-  .period-cell {
-    min-height: 120px;
+
+  .weekly-calendar .period-number,
+  .weekly-calendar .period-cell {
+    height: 99px;
   }
-  
+
   .comment-textarea {
     min-height: 50px;
   }
 }
 
 @media (max-width: 768px) {
-  .monthly-calendar,
-  .weekly-calendar {
-    margin: 10px;
-    padding: 10px;
+  .monthly-calendar {
+    margin: 8px;
+    padding: 8px;
     max-width: 100vw;
   }
-  
-  .calendar-day {
-    min-height: 100px;
-    padding: 3px;
-  }
-  
-  .period-cell {
-    min-height: 100px;
-  }
-  
-  .day-headers,
-  .calendar-days {
-    font-size: 0.9rem;
-  }
-  
-  .weekly-day-headers,
-  .weekly-period-row {
-    grid-template-columns: 60px repeat(7, 1fr);
-  }
-  
-  .period-number {
-    font-size: 0.8rem;
-  }
-  
-  .comment-textarea {
-    min-height: 40px;
-    font-size: 0.5rem;
-  }
-  
-  .weekly-class-bar {
-    font-size: 0.5rem;
-    min-height: 18px;
-  }
-  
-  .class-bar {
-    font-size: 0.6rem;
-    min-height: 14px;
-  }
-}
 
-@media (max-width: 480px) {
-  .monthly-calendar,
   .weekly-calendar {
-    padding: 5px;
+    padding: 8px;
   }
-  
+
   .calendar-day {
     min-height: 80px;
     padding: 2px;
   }
-  
-  .period-cell {
-    min-height: 80px;
+
+  .weekly-calendar .period-number,
+  .weekly-calendar .period-cell {
+    height: 90px;
   }
-  
+
+  .day-headers,
+  .calendar-days {
+    font-size: 0.85rem;
+  }
+
+  .day-header {
+    padding: 6px;
+  }
+
   .weekly-day-headers,
   .weekly-period-row {
-    grid-template-columns: 50px repeat(7, 1fr);
+    grid-template-columns: 60px repeat(5, 1fr);
   }
-  
+
+  .period-number {
+    font-size: 0.8rem;
+  }
+
+  .comment-textarea {
+    min-height: 40px;
+    font-size: 0.5rem;
+  }
+
+  .weekly-class-bar {
+    font-size: 0.28rem;
+    min-height: 10px;
+  }
+
+  .class-bar {
+    font-size: 0.27rem;
+    min-height: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .monthly-calendar {
+    padding: 4px;
+  }
+
+  .weekly-calendar {
+    padding: 5px;
+  }
+
+  .calendar-day {
+    min-height: 64px;
+    padding: 2px;
+  }
+
+  .day-header {
+    padding: 5px;
+    font-size: 0.75rem;
+  }
+
+  .weekly-calendar .period-number,
+  .weekly-calendar .period-cell {
+    height: 81px;
+  }
+
+  .weekly-day-headers,
+  .weekly-period-row {
+    grid-template-columns: 50px repeat(5, 1fr);
+  }
+
   .comment-textarea {
     min-height: 35px;
   }

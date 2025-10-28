@@ -7,6 +7,7 @@ import ScheduleEditor from './components/ScheduleManager/ScheduleEditor';
 import DateRangeEditor from './components/ScheduleManager/DateRangeEditor';
 import Statistics from './components/Statistics/Statistics';
 import HolidayEditor from './components/HolidayEditor/HolidayEditor';
+import SettingsModal from './components/SettingsModal/SettingsModal';
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Load initial data on component mount
   useEffect(() => {
@@ -215,6 +217,38 @@ function App() {
     }
   };
 
+  const handleDeleteAllClassEntries = async () => {
+    try {
+      setUpdating(true);
+      await api.deleteAllClassEntries();
+      await loadClassEntries();
+      setShowSettingsModal(false);
+      alert('모든 수업 기록이 삭제되었습니다.');
+    } catch (err) {
+      console.error('Failed to delete all class entries:', err);
+      setError('수업 전체 삭제에 실패했습니다.');
+      alert('수업 전체 삭제에 실패했습니다.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteAllHolidays = async () => {
+    try {
+      setUpdating(true);
+      await api.deleteAllHolidays();
+      await loadHolidays();
+      setShowSettingsModal(false);
+      alert('모든 공휴일이 삭제되었습니다.');
+    } catch (err) {
+      console.error('Failed to delete all holidays:', err);
+      setError('공휴일 전체 삭제에 실패했습니다.');
+      alert('공휴일 전체 삭제에 실패했습니다.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const handleDateClick = (date) => {
     setCurrentDate(date);
     setViewMode('weekly');
@@ -402,6 +436,13 @@ function App() {
             >
               공휴일 편집
             </button>
+            <button
+              className="settings-button"
+              onClick={() => setShowSettingsModal(true)}
+              title="설정"
+            >
+              ⚙️
+            </button>
           </div>
         </div>
       </header>
@@ -479,6 +520,14 @@ function App() {
           onAddHoliday={handleAddHoliday}
           onRemoveHoliday={handleRemoveHoliday}
           onClose={() => setShowHolidayEditor(false)}
+        />
+      )}
+
+      {showSettingsModal && (
+        <SettingsModal
+          onClose={() => setShowSettingsModal(false)}
+          onDeleteAllClasses={handleDeleteAllClassEntries}
+          onDeleteAllHolidays={handleDeleteAllHolidays}
         />
       )}
     </div>

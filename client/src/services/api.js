@@ -300,5 +300,27 @@ export const api = {
 
     if (error) throw error;
     return true;
+  },
+
+  // Delete all class entries
+  deleteAllClassEntries: async () => {
+    const { error } = await supabase
+      .from('class_entries')
+      .delete()
+      .neq('id', 0); // Delete all rows (neq 0 matches all)
+
+    if (error) throw error;
+    return true;
+  },
+
+  // Delete all holidays
+  deleteAllHolidays: async () => {
+    const { error } = await supabase
+      .from('holidays')
+      .delete()
+      .neq('id', 0); // Delete all rows (neq 0 matches all)
+
+    if (error) throw error;
+    return true;
   }
 };

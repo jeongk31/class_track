@@ -29,14 +29,14 @@ export const generateClasses = () => {
   }));
 };
 
-// Generate default weekly schedule with period-specific assignments
+// Generate default weekly schedule with no classes assigned
 export const generateDefaultWeeklySchedule = () => {
   return {
-    monday: { 1: null, 2: null, 3: 4, 4: null, 5: 6, 6: null, 7: 10 },
-    tuesday: { 1: 1, 2: null, 3: 3, 4: null, 5: null, 6: 7, 7: null },
-    wednesday: { 1: null, 2: 2, 3: null, 4: null, 5: 5, 6: null, 7: 8 },
-    thursday: { 1: 1, 2: null, 3: null, 4: 4, 5: null, 6: null, 7: 9 },
-    friday: { 1: null, 2: null, 3: 3, 4: null, 5: null, 6: 6, 7: 11 },
+    monday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
+    tuesday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
+    wednesday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
+    thursday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
+    friday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
     saturday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
     sunday: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null }
   };
@@ -108,37 +108,20 @@ export const getClassesForDay = (weeklySchedule, dayOfWeek) => {
   return Object.values(daySchedule).filter(classId => classId !== null);
 };
 
-// Get classes for a specific date (checks daily schedule first, then falls back to weekly)
-export const getClassesForDate = (weeklySchedule, date, dailySchedules = {}) => {
-  const dateStr = formatDate(date);
-  
-  // Check if there's a daily schedule override for this date
-  if (dailySchedules[dateStr]) {
-    return Object.values(dailySchedules[dateStr]).filter(classId => classId !== null);
-  }
-  
-  // Fall back to weekly schedule
+// Get classes for a specific date
+export const getClassesForDate = (weeklySchedule, date) => {
   const dayOfWeek = DAYS_OF_WEEK[date.getDay()];
   return getClassesForDay(weeklySchedule, dayOfWeek);
 };
 
-// Get class for specific day and period (checks daily schedule first, then falls back to weekly)
-export const getClassForPeriod = (weeklySchedule, dayOfWeek, period, date = null, dailySchedules = {}) => {
-  // If date is provided, check daily schedule first
-  if (date) {
-    const dateStr = formatDate(date);
-    if (dailySchedules[dateStr]) {
-      return dailySchedules[dateStr][period] || null;
-    }
-  }
-  
-  // Fall back to weekly schedule
+// Get class for specific day and period
+export const getClassForPeriod = (weeklySchedule, dayOfWeek, period) => {
   const daySchedule = weeklySchedule[dayOfWeek] || {};
   return daySchedule[period] || null;
 };
 
 // Generate calendar events for a month
-export const generateCalendarEvents = (weeklySchedule, year, month, startDate, endDate, dailySchedules = {}) => {
+export const generateCalendarEvents = (weeklySchedule, year, month, startDate, endDate) => {
   const events = [];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const semesterStart = new Date(startDate);
@@ -149,7 +132,7 @@ export const generateCalendarEvents = (weeklySchedule, year, month, startDate, e
     
     // Check if date is within semester period
     if (date >= semesterStart && date <= semesterEnd) {
-      const classes = getClassesForDate(weeklySchedule, date, dailySchedules);
+      const classes = getClassesForDate(weeklySchedule, date);
       
       if (classes.length > 0) {
         events.push({

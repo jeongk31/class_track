@@ -3,12 +3,33 @@
 .calendar-header {
   text-align: center;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .calendar-header h2 {
   margin: 0;
   color: #333;
   font-size: 1.5rem;
+}
+
+.save-comments-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.save-comments-button:hover {
+  background: #218838;
 }
 
 /* Monthly Calendar Styles */

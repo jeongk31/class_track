@@ -1,13 +1,15 @@
+/* Date Range Editor Styles */
+
 .date-range-editor-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
@@ -25,13 +27,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .editor-header h2 {
   margin: 0;
-  font-size: 1.5rem;
   color: #333;
 }
 
@@ -52,18 +53,18 @@
 }
 
 .close-button:hover {
-  background-color: #f0f0f0;
+  background-color: #f8f9fa;
 }
 
 .editor-content {
-  padding: 24px;
+  padding: 20px;
 }
 
 .date-inputs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 30px;
+  margin-bottom: 30px;
 }
 
 .date-input-group {
@@ -72,120 +73,104 @@
 }
 
 .date-input-group label {
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 8px;
   color: #333;
 }
 
 .date-input {
   padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
   font-size: 16px;
   transition: border-color 0.2s;
 }
 
 .date-input:focus {
   outline: none;
-  border-color: #4ECDC4;
+  border-color: #007bff;
 }
 
-.date-range-preview {
-  background-color: #f8f9fa;
-  padding: 16px;
+.date-display {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  color: #666;
+  font-size: 14px;
+}
+
+.date-info,
+.preview-info {
+  background: #f8f9fa;
+  padding: 20px;
   border-radius: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
-.date-range-preview h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
+.date-info h4,
+.preview-info h4 {
+  margin-bottom: 15px;
   color: #333;
 }
 
-.date-range-preview p {
-  margin: 0;
-  font-size: 1rem;
-  color: #666;
+.current-dates,
+.preview-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.error-message {
-  background-color: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  border: 1px solid #fcc;
+.current-date-item,
+.preview-date-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.instructions {
-  background-color: #f0f8ff;
-  padding: 16px;
-  border-radius: 8px;
-  border-left: 4px solid #4ECDC4;
-}
-
-.instructions h3 {
-  margin: 0 0 12px 0;
-  font-size: 1.1rem;
-  color: #333;
-}
-
-.instructions ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.instructions li {
-  margin-bottom: 8px;
-  color: #666;
-  line-height: 1.5;
+.current-date-item:last-child,
+.preview-date-item:last-child {
+  border-bottom: none;
 }
 
 .editor-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
-  border-radius: 0 0 12px 12px;
+  gap: 15px;
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
 }
 
 .cancel-button,
 .save-button {
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancel-button {
-  background-color: #6c757d;
+  background: #6c757d;
   color: white;
 }
 
 .cancel-button:hover {
-  background-color: #5a6268;
+  background: #5a6268;
 }
 
 .save-button {
-  background-color: #4ECDC4;
+  background: #007bff;
   color: white;
 }
 
 .save-button:hover {
-  background-color: #3bb5b0;
+  background: #0056b3;
 }
 
-.save-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
   .date-range-editor {
     width: 95%;
@@ -194,7 +179,7 @@
   
   .date-inputs {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 20px;
   }
   
   .editor-actions {
@@ -206,3 +191,4 @@
     width: 100%;
   }
 }
+

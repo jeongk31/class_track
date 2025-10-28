@@ -2,23 +2,12 @@
   "name": "class-track",
   "version": "1.0.0",
   "description": "Class schedule tracking application for teachers",
-  "main": "server.js",
+  "main": "client/src/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "nodemon server.js",
-    "client": "cd client && npm start",
+    "start": "cd client && npm start",
+    "dev": "cd client && npm start",
     "build": "cd client && npm run build",
     "install-client": "cd client && npm install"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1",
-    "concurrently": "^8.2.2"
   },
   "keywords": ["schedule", "calendar", "education", "teacher"],
   "author": "",

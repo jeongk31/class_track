@@ -1,8 +1,10 @@
-import React, { useCallback } from 'react';
-import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, getClassComment, setClassComment, isHoliday } from '../../data/scheduleData';
+import { useCallback, useState } from 'react';
+import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
-const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, comments, holidays, dailySchedules, onClassStatusUpdate, onCommentsUpdate }) => {
+const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate, classStatus, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
+  const [pendingComments, setPendingComments] = useState({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentDate);
   startOfWeek.setHours(0, 0, 0, 0); // Normalize to midnight
@@ -22,13 +24,21 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     date.setDate(startOfWeek.getDate() + i);
     date.setHours(0, 0, 0, 0); // Normalize to midnight
     const dayName = DAYS_OF_WEEK[date.getDay()];
-    
-    // Check for daily schedule override first
-    const dateStr = date.toISOString().split('T')[0];
-    const daySchedule = dailySchedules[dateStr] || weeklySchedule[dayName] || {};
-    
     const isWithinSemester = date >= semesterStart && date <= semesterEnd;
     const isHolidayDay = isHoliday(date, holidays);
+    
+    // Build schedule from database entries
+    const daySchedule = {};
+    if (classEntries) {
+      const dateStr = date.toISOString().split('T')[0];
+      const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
+      
+      entriesForDate.forEach(entry => {
+        if (entry.class_type_id !== null) {
+          daySchedule[entry.period] = entry.class_type_id;
+        }
+      });
+    }
     
     weekDays.push({
       date,
@@ -54,11 +64,51 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     onClassStatusUpdate(newClassStatus);
   };
 
-  // Simple save function
-  const saveComment = useCallback((date, classId, period, value) => {
-    const newComments = setClassComment(comments, date, classId, value, period);
-    onCommentsUpdate(newComments);
-  }, [comments, onCommentsUpdate]);
+  // Handle comment changes locally
+  const handleCommentChange = useCallback((date, classId, period, value) => {
+    // Validate period is within allowed range
+    if (period < 1 || period > PERIODS_PER_DAY) {
+      console.warn(`Invalid period value: ${period}. Must be between 1 and ${PERIODS_PER_DAY}`);
+      return;
+    }
+    
+    const dateStr = date.toISOString().split('T')[0];
+    const key = `${dateStr}-${classId}-${period}`;
+    
+    setPendingComments(prev => ({
+      ...prev,
+      [key]: value
+    }));
+    setHasUnsavedChanges(true);
+  }, []);
+
+  // Save all pending comments
+  const saveAllComments = useCallback(() => {
+    Object.entries(pendingComments).forEach(([key, value]) => {
+      // Parse key format: "2025-01-01-10-1"
+      const parts = key.split('-');
+      if (parts.length >= 5) {
+        const classIdStr = parts[3];
+        const periodStr = parts[4];
+        const classId = parseInt(classIdStr);
+        const period = parseInt(periodStr);
+        
+        // Validate period before saving
+        if (period >= 1 && period <= PERIODS_PER_DAY && !isNaN(period)) {
+          const dateStr = parts.slice(0, 3).join('-');
+          const date = new Date(dateStr);
+          onCommentsUpdate(date, classId, period, value);
+        } else {
+          console.error(`Skipping invalid period ${period} for class ${classId}`);
+        }
+      } else {
+        console.error(`Invalid key format: ${key}`);
+      }
+    });
+    
+    setPendingComments({});
+    setHasUnsavedChanges(false);
+  }, [pendingComments, onCommentsUpdate]);
   
   const formatWeekRange = () => {
     const endOfWeek = new Date(startOfWeek);
@@ -71,6 +121,15 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
     <div className="weekly-calendar">
       <div className="calendar-header">
         <h2>주간 일정 - {formatWeekRange()}</h2>
+        {hasUnsavedChanges && (
+          <button 
+            className="save-comments-button"
+            onClick={saveAllComments}
+            title="변경사항 저장"
+          >
+            💾 저장
+          </button>
+        )}
       </div>
       
       <div className="weekly-grid">
@@ -95,16 +154,23 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
         {Array.from({ length: PERIODS_PER_DAY }, (_, periodIndex) => {
           const period = periodIndex + 1;
           return (
-            <div key={periodIndex} className="weekly-period-row">
+            <div key={period} className="weekly-period-row">
               <div className="period-number">{period}교시</div>
               {weekDays.map((dayData, dayIndex) => {
                 const classId = dayData.schedule[period];
                 const hasClass = classId !== null && classId !== undefined && dayData.isWithinSemester && !dayData.isHoliday;
                 const isCompleted = hasClass ? isClassCompleted(classStatus, dayData.date, classId, period) : false;
-                
-                // Get comment from global state
-                const comment = hasClass ? getClassComment(comments, dayData.date, classId, period) : '';
-                
+
+                // Get comment directly from classEntries database
+                let comment = '';
+                if (hasClass && classEntries) {
+                  const dateStr = dayData.date.toISOString().split('T')[0];
+                  const entry = classEntries.find(
+                    e => e.date === dateStr && e.class_type_id === classId && e.period === period
+                  );
+                  comment = entry?.notes || '';
+                }
+
                 return (
                   <div 
                     key={dayIndex} 
@@ -139,9 +205,9 @@ const WeeklyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDa
                           <textarea
                             key={`${dayData.date.toISOString().split('T')[0]}-${classId}-${period}`}
                             defaultValue={comment}
-                            onBlur={(e) => {
+                            onChange={(e) => {
                               e.stopPropagation();
-                              saveComment(dayData.date, classId, period, e.target.value);
+                              handleCommentChange(dayData.date, classId, period, e.target.value);
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}

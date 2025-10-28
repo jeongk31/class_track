@@ -2,7 +2,7 @@ import React from 'react';
 import { DAYS_OF_WEEK_KOREAN, generateCalendarEvents, isClassCompleted, toggleClassCompletion, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
-const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endDate, classStatus, holidays, dailySchedules, onDateClick, onClassStatusUpdate }) => {
+const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, startDate, endDate, classStatus, holidays, onDateClick, onClassStatusUpdate }) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   
@@ -18,8 +18,41 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, startDate, endD
   // If Tuesday (2), we need 2 empty cells, etc.
   const daysToSunday = startingDayOfWeek;
   
-  // Generate calendar events for this month
-  const events = generateCalendarEvents(weeklySchedule, year, month, startDate, endDate, dailySchedules);
+  // Generate calendar events from database entries
+  const events = [];
+  if (classEntries && classEntries.length > 0) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const semesterStart = new Date(startDate);
+    semesterStart.setHours(0, 0, 0, 0);
+    const semesterEnd = new Date(endDate);
+    semesterEnd.setHours(0, 0, 0, 0);
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      date.setHours(0, 0, 0, 0);
+      
+      if (date >= semesterStart && date <= semesterEnd) {
+        const dateStr = date.toISOString().split('T')[0];
+        const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
+        
+        if (entriesForDate.length > 0) {
+          const classIds = new Set();
+          entriesForDate.forEach(entry => {
+            if (entry.class_type_id !== null) {
+              classIds.add(entry.class_type_id);
+            }
+          });
+          
+          if (classIds.size > 0) {
+            events.push({
+              date: new Date(date),
+              classes: Array.from(classIds)
+            });
+          }
+        }
+      }
+    }
+  }
   
   // Create array of days to display
   const days = [];

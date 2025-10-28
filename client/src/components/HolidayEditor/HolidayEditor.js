@@ -45,9 +45,8 @@ const HolidayEditor = ({ holidays, holidayData, onAddHoliday, onRemoveHoliday, o
     const grouped = {};
 
     holidayList.forEach(holiday => {
-      const date = new Date(holiday);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
+      // Parse date as local date to avoid timezone issues
+      const [year, month, day] = holiday.split('-').map(Number);
       const key = `${year}-${String(month).padStart(2, '0')}`;
 
       if (!grouped[key]) {

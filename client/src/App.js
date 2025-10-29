@@ -10,6 +10,15 @@ import HolidayEditor from './components/HolidayEditor/HolidayEditor';
 import SettingsModal from './components/SettingsModal/SettingsModal';
 import './App.css';
 
+// Helper function to format date as YYYY-MM-DD in local timezone (no UTC conversion)
+const formatDateLocal = (date) => {
+  if (typeof date === 'string') return date;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('monthly'); // monthly, weekly, statistics
@@ -136,7 +145,7 @@ function App() {
       setUpdating(true);
       // Find the entry for this date, class, and period
       // Handle both Date objects and date strings
-      const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+      const dateStr = formatDateLocal(date);
       const entry = classEntries.find(
         e => e.date === dateStr && e.class_type_id === classId && e.period === period
       );
@@ -169,7 +178,7 @@ function App() {
 
       // Find the entry for this date, class, and period
       // Handle both Date objects and date strings
-      const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+      const dateStr = formatDateLocal(date);
       const entry = classEntries.find(
         e => e.date === dateStr && e.class_type_id === classId && e.period === period
       );
@@ -297,7 +306,7 @@ function App() {
   // Convert class entries to the format expected by components
   const getClassStatusForDate = (date) => {
     // Handle both Date objects and date strings
-    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
 
     const status = {};
@@ -311,7 +320,7 @@ function App() {
 
   const getCommentsForDate = (date) => {
     // Handle both Date objects and date strings
-    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
 
     const comments = {};
@@ -326,7 +335,7 @@ function App() {
   // Get classes for a specific date from database entries
   const getClassesForDate = (date) => {
     // Handle both Date objects and date strings
-    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
 
     const classIds = new Set();

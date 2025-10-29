@@ -2,6 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DAYS_OF_WEEK, DAYS_OF_WEEK_KOREAN, PERIODS_PER_DAY, isClassCompleted, toggleClassCompletion, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
+// Helper function to format date as YYYY-MM-DD in local timezone (no UTC conversion)
+const formatDateLocal = (date) => {
+  if (typeof date === 'string') return date;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate, classStatus, holidays, onClassStatusUpdate, onCommentsUpdate }) => {
   const saveTimeoutRef = useRef({});
   const [hasPendingSaves, setHasPendingSaves] = useState(false);
@@ -25,7 +34,7 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
     // Build schedule from database entries
     const daySchedule = {};
     if (classEntries) {
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = formatDateLocal(date);
       const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
 
       entriesForDate.forEach(entry => {
@@ -70,7 +79,7 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
       return;
     }
 
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     const key = `${dateStr}-${classId}-${period}`;
 
     // Clear existing timeout for this specific comment
@@ -155,7 +164,7 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
                 // Get comment directly from classEntries database
                 let comment = '';
                 if (hasClass && classEntries) {
-                  const dateStr = dayData.date.toISOString().split('T')[0];
+                  const dateStr = formatDateLocal(dayData.date);
                   const entry = classEntries.find(
                     e => e.date === dateStr && e.class_type_id === classId && e.period === period
                   );
@@ -194,7 +203,7 @@ const WeeklyCalendar = ({ currentDate, classes, classEntries, startDate, endDate
                         </div>
                         <div className="weekly-class-comment">
                           <textarea
-                            key={`${dayData.date.toISOString().split('T')[0]}-${classId}-${period}`}
+                            key={`${formatDateLocal(dayData.date)}-${classId}-${period}`}
                             defaultValue={comment}
                             onChange={(e) => {
                               e.stopPropagation();

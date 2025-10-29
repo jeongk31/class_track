@@ -2,6 +2,15 @@ import React from 'react';
 import { DAYS_OF_WEEK_KOREAN, generateCalendarEvents, isClassCompleted, toggleClassCompletion, isHoliday } from '../../data/scheduleData';
 import './Calendar.css';
 
+// Helper function to format date as YYYY-MM-DD in local timezone (no UTC conversion)
+const formatDateLocal = (date) => {
+  if (typeof date === 'string') return date;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, startDate, endDate, classStatus, holidays, onDateClick, onClassStatusUpdate }) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -27,7 +36,7 @@ const MonthlyCalendar = ({ currentDate, weeklySchedule, classes, classEntries, s
       const date = new Date(year, month, day);
       date.setHours(0, 0, 0, 0);
 
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = formatDateLocal(date);
       const entriesForDate = classEntries.filter(entry => entry.date === dateStr);
 
       if (entriesForDate.length > 0) {
